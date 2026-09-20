@@ -1,8 +1,10 @@
 /* טיקטין — גנרטורים וחיבורים · שירות אופליין */
-var CACHE = "tiktin-gen-v1";
+var CACHE = "tiktin-gen-v3";
 var ASSETS = ["./", "./index.html", "./manifest.webmanifest",
   "./icon-192.png", "./icon-512.png", "./icon-192-maskable.png",
-  "./icon-512-maskable.png", "./apple-touch-icon.png"];
+  "./icon-512-maskable.png", "./apple-touch-icon.png",
+  "./vendor/html2canvas.min.js",
+  "./vendor/jspdf.umd.min.js"];
 
 self.addEventListener("install", function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(ASSETS); }).then(function(){return self.skipWaiting();}));
