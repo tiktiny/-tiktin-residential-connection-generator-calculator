@@ -14,6 +14,310 @@
 <style>html,body{margin:0;padding:0;background:#f2f5f8}img{max-width:100%}[hidden]{display:none!important}</style>
 <script src="vendor/html2canvas.min.js"></script>
 <script src="vendor/jspdf.umd.min.js"></script>
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f2f5f8; --surface:#ffffff; --surface-2:#f5f8fa; --ink:#132029; --ink-2:#4d5e6b;
+  --line:#c6d2db; --line-2:#e3eaef; --accent:#0d6b9e; --accent-2:#0a5480; --accent-soft:#e2eef6;
+  --emergency:#f2a03d; --emergency-ink:#8a5a12; --emergency-soft:#fdeed6;
+  --essential:#e2392c; --essential-soft:#fbdedb;
+  --plain:#132029; --plain-soft:#edf1f4;
+  --danger:#c42b21; --danger-soft:#fbe2e0;
+  --note:#8a6a13; --note-soft:#fbf1d8;
+  --shadow:0 1px 2px rgba(19,32,41,.06),0 8px 22px rgba(19,32,41,.05);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Heebo",-apple-system,"Segoe UI",sans-serif;font-size:15.5px;font-weight:500;line-height:1.55;font-variant-numeric:tabular-nums}
+#app{direction:rtl}
+h1,h2,h3,.disp{font-family:"Rubik","Heebo",sans-serif;font-weight:600;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+header.top{background:var(--surface);color:var(--ink);padding-block:18px 16px;border-bottom:1px solid var(--line)}
+header.top .brand{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;justify-content:space-between}
+header.top .idblock{display:flex;gap:13px;align-items:flex-start}
+header.top .logo{flex:0 0 auto;margin-top:2px}
+header.top .logo img{display:block;height:48px;width:auto}
+header.top .wordmark{font-family:"Rubik",sans-serif;font-weight:600;font-size:15px;color:var(--ink);letter-spacing:.06em}
+header.top .wordmark span{font-weight:400;font-size:12px;color:var(--ink-2);letter-spacing:.02em}
+header.top h1{font-size:20px;color:var(--ink);letter-spacing:-.2px;margin-top:2px}
+header.top .sub{color:var(--ink-2);font-size:13.5px;font-weight:400}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line-2)}
+.toolbar .grp{display:flex;gap:6px;align-items:center;background:var(--surface-2);border:1px solid var(--line-2);border-radius:8px;padding:5px 8px}
+.toolbar select{min-width:170px}
+.credit{font-family:"Rubik",sans-serif;font-size:12px;color:var(--ink-2);letter-spacing:.02em;margin-top:6px}
+.suggest{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:12px;padding:9px 12px;background:var(--surface-2);border:1px solid var(--line-2);border-radius:8px}
+.suggest b{font-family:"Rubik",sans-serif}
+.suggest input{width:66px;text-align:center;padding:2px 4px}
+.projline{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+.projline input{flex:1 1 220px;min-width:0}
+.btn{font-family:inherit;font-size:14px;font-weight:600;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 14px;cursor:pointer}
+.btn:hover{background:var(--surface-2)}
+.btn:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.tiny{padding:4px 10px;font-size:13px;border-radius:5px}
+.wip{display:inline-block;margin-inline-start:6px;padding:1px 6px;border-radius:999px;
+ background:#F2A03D;color:#fff;font-size:11px;font-weight:700;vertical-align:middle}
+button:disabled{opacity:.6;cursor:not-allowed}
+.strip .sp{margin-inline-start:auto;display:flex;gap:8px;flex:none}
+.strip{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line);box-shadow:0 2px 10px rgba(19,32,41,.06)}
+.strip .in{display:flex;gap:8px;overflow-x:auto;padding:9px 16px;max-width:1180px;margin:0 auto}
+.chip{display:flex;gap:6px;align-items:baseline;white-space:nowrap;border:1px solid var(--line-2);background:var(--surface-2);border-radius:999px;padding:5px 13px;font-size:13.5px;font-weight:500;color:var(--ink-2)}
+.chip b{font-family:"Rubik",sans-serif;color:var(--ink);font-size:14.5px}
+.chip.hot{border-color:var(--accent);background:var(--accent-soft)}
+button.chip{cursor:pointer;font-family:inherit}
+button.chip:hover{border-color:var(--accent);background:var(--accent-soft)}
+button.chip:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.flash{animation:flash 1.2s ease-out}
+@keyframes flash{0%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:0 0 0 3px rgba(0,0,0,0)}}
+@media (prefers-reduced-motion:reduce){.flash{animation:none}}
+section.card{background:var(--surface);border:1px solid var(--line-2);border-radius:10px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+.card>.hd{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line-2);background:var(--surface-2)}
+.card>.hd h2{font-size:16.5px}
+.card>.bd{padding:14px}
+.eyebrow{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2);font-weight:500}
+.sectitle{display:flex;align-items:baseline;gap:12px;margin:26px 0 12px}
+.sectitle.major{margin-top:34px;padding-top:22px;border-top:4px solid var(--accent)}
+.sep{border:0;border-top:2px dashed var(--line);margin:20px 0;position:relative;height:0}
+.sep.sep-major{border-top:4px solid var(--accent);margin:30px 0 18px;height:auto;text-align:center}
+.sep.sep-major>span{display:inline-block;transform:translateY(-13px);background:var(--bg);padding:0 12px;
+  font-family:"Rubik",sans-serif;font-weight:600;font-size:13.5px;color:var(--accent)}
+.sectitle h2{font-size:19px}
+.sectitle .ln{flex:1;height:1px;background:var(--line)}
+label.f{display:block;font-size:14.5px;font-weight:600;color:var(--ink);margin-bottom:4px}
+input,select{font-family:inherit;font-size:13.5px;font-weight:500;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 8px;width:100%}
+input[type=number]{text-align:center;-moz-appearance:textfield;appearance:textfield}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.fld{position:relative;display:block}
+.fld>input{padding-inline-end:22px;width:100%}
+.fld>.clr{position:absolute;inset-inline-end:3px;top:50%;transform:translateY(-50%);width:17px;height:17px;
+  border:0;border-radius:4px;background:var(--line-2);color:var(--ink-2);font-size:11px;line-height:17px;
+  padding:0;cursor:pointer;display:none;font-family:inherit}
+.fld>.clr:hover{background:var(--danger-soft);color:var(--danger)}
+.fld.has>.clr{display:block}
+input[readonly]{background:var(--surface-2);color:var(--ink-2)}
+.row4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media(max-width:620px){.row4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{border-bottom:1px solid var(--line-2);padding:6px 8px;text-align:center;white-space:nowrap}
+th{font-weight:600;font-size:14px;color:var(--ink);letter-spacing:.01em;background:var(--surface-2)}
+td.name,th.name{text-align:start;white-space:normal;min-width:180px}
+tr.tot td{font-weight:700;background:var(--surface-2)}
+tr.sub td{font-weight:600;background:var(--surface-2);color:var(--ink-2)}
+
+.empty{font-size:13px;color:var(--ink-2);background:var(--surface-2);border:1px dashed var(--line);border-radius:8px;padding:14px}
+.reminder{font-size:13px;font-weight:500;color:var(--note);background:var(--note-soft);border-radius:6px;padding:6px 10px;margin:0 0 8px}
+tr.absent td{color:var(--ink-2)}
+tr.absent td.name{opacity:.7}
+.pill{display:inline-block;font-size:12.5px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.g-em{background:var(--emergency);color:#16100a}
+.g-es{background:var(--essential);color:#1a0806}
+.g-ne{background:transparent;color:var(--ink);border:1px solid var(--line)}
+td.gcell{background:transparent}
+td.gcell select{font-weight:500;color:#16100a}
+td.gcell.c-em select{background:var(--emergency);border-color:rgba(0,0,0,.3)}
+td.gcell.c-es select{background:var(--essential);color:#1a0806;border-color:rgba(0,0,0,.3)}
+td.gcell.c-ne select,td.gcell.c-open select{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.bldg{border:1px solid var(--line);border-radius:9px;margin-bottom:12px;overflow:hidden}
+.bldg>.bh{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 12px;background:var(--surface-2);border-bottom:1px solid var(--line-2)}
+.bldg>.bh .nm{flex:0 0 auto}
+.bldg>.bh .nm input{width:170px}
+.bldg>.bh .hgt{display:flex;align-items:center;gap:6px}
+.bldg>.bh .hgt select{width:158px}
+.bldg>.bb{padding:12px}
+.sub-h{font-size:15px;font-weight:600;color:var(--accent);letter-spacing:.03em;margin:15px 0 6px;display:flex;align-items:center;gap:8px}
+.sub-h:first-child{margin-top:0}
+.sub-h::after{content:"";flex:1;height:1px;background:var(--line-2)}
+.mini{font-size:12.5px;color:var(--ink-2)}
+.gsel{width:152px;font-size:12.5px;padding:4px 6px;font-weight:600}
+
+.w-num{width:82px}.w-unit{width:82px}.w-qty{width:62px}
+.res{border:1px solid var(--line);border-radius:9px;margin-bottom:14px;overflow:hidden;background:var(--surface)}
+.res>.rh{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:baseline;padding:11px 13px;border-bottom:1px solid var(--line-2)}
+.res>.rh .t{font-family:"Rubik",sans-serif;font-weight:600;font-size:15px}
+.res.gen>.rh{background:var(--accent);color:#fff;border-bottom:0}
+.res.gen>.rh .t,.res.gen>.rh .who{color:#fff}
+.who{font-size:13px;color:var(--ink-2)}
+.big{font-family:"Rubik",sans-serif;font-weight:600;font-size:24px;letter-spacing:-.5px}
+.big small{font-size:12px;font-weight:400;letter-spacing:0}
+.verdict{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;padding:10px 13px;background:var(--accent-soft);border-top:1px solid var(--line-2)}
+.verdict .lbl{font-size:13.5px;color:var(--ink-2)}
+.verdict strong{font-family:"Rubik",sans-serif;font-size:18px}
+.calcrow{display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:7px 13px;border-top:1px dashed var(--line-2);font-size:13.5px}
+.calcrow .lbl{color:var(--ink-2)}
+.calcrow .val{font-weight:600;white-space:nowrap}
+.win{color:var(--accent);font-weight:700}
+.warn{color:var(--danger);font-weight:600}
+.calcrow.alert{background:var(--danger-soft)}
+.alertbox{background:var(--danger-soft);color:var(--danger);font-size:13.5px;font-weight:600;padding:9px 13px;border-top:1px solid var(--line-2)}
+td.warnrow{background:var(--danger-soft);color:var(--danger);font-weight:600;text-align:start;white-space:normal;font-size:13.5px}
+.ver{font-size:11px;color:#6b7a88;margin-top:3px;letter-spacing:.2px}
+.genloc{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 14px;border-top:1px solid var(--line)}
+.genloc select,.genloc input{height:30px;font-size:12px;padding:0 8px;border:1px solid var(--line);border-radius:7px;background:#fff}
+.genloc input{min-width:190px}
+.genloc-t{font-size:12px;font-weight:600;color:var(--ink)}
+#park-mismatch{border:1px solid var(--danger);border-radius:8px;margin-top:10px}
+#park-note{border:1px solid var(--danger);border-radius:8px;margin-top:10px;border-top:1px solid var(--danger)}
+.chip.bad{border-color:var(--danger);background:var(--danger-soft);color:var(--danger)}
+.chip.bad b{color:var(--danger)}
+.note{font-size:13px;color:var(--ink-2);line-height:1.5;margin-top:8px}
+details>summary{cursor:pointer;list-style:none;padding:8px 13px;font-size:12.5px;color:var(--accent);background:var(--surface-2);border-top:1px solid var(--line-2)}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"▾ ";display:inline-block}
+details:not([open])>summary::before{content:"▸ "}
+.foot{font-size:12.5px;color:var(--ink-2);text-align:center;padding:22px 0 40px;line-height:1.7}
+.modal-ov{position:fixed;inset:0;background:rgba(19,32,41,.45);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
+.modal{background:var(--surface);border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.25);max-width:420px;width:100%;padding:18px}
+.modal .mt{font-family:"Rubik",sans-serif;font-weight:600;font-size:16px;margin-bottom:8px}
+.modal .mb{font-size:13.5px;color:var(--ink-2);line-height:1.6}
+.modal .ma{display:flex;gap:8px;justify-content:flex-start;margin-top:16px}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.pdfdoc{width:794px;background:#fff;color:#132029;font-family:"Heebo",Arial,sans-serif}
+.pdfsec{padding:0 34px 14px;background:#fff}
+.pdfsec:first-child{padding-top:26px}
+.pdfdoc .ph{display:flex;gap:16px;align-items:center;border-bottom:3px solid #0d6b9e;padding-bottom:12px;margin-bottom:6px}
+.pdfdoc .ph img{height:52px;width:auto}
+.pdfdoc .pt{font-family:"Rubik",Arial,sans-serif;font-weight:600;font-size:21px}
+.pdfdoc .ps{font-size:13px;color:#4d5e6b;margin-top:3px}
+.pdfdoc .sh{font-family:"Rubik",Arial,sans-serif;font-weight:600;font-size:15px;color:#0d6b9e;
+  border-right:5px solid #0d6b9e;padding:4px 10px 4px 0;margin:14px 0 8px;background:#eef4f9}
+.pdfdoc .sh .sub{font-family:"Heebo",Arial,sans-serif;font-weight:400;font-size:12px;color:#4d5e6b}
+.pdfdoc table{width:100%;border-collapse:collapse;font-size:11.5px}
+.pdfdoc th{background:#0d6b9e;color:#fff;font-weight:600;padding:5px 6px;border:1px solid #b9c7d2;text-align:center}
+.pdfdoc td{padding:4px 6px;border:1px solid #cdd8e1;text-align:center}
+.pdfdoc td.name,.pdfdoc td.s{text-align:right}
+.pdfdoc td.b{font-weight:700}
+.pdfdoc tr.tot td{background:#dceaf4;font-weight:700}
+.pdfdoc tr.absent td{color:#7a8894}
+.pdfdoc .pill{border-radius:3px;padding:1px 7px;font-size:11px;font-weight:600;display:inline-block}
+.pdfdoc .g-em{background:#f2a03d;color:#16100a}
+.pdfdoc .g-es{background:#e2392c;color:#1a0806}
+.pdfdoc .g-ne{background:#fff;color:#132029;border:1px solid #cdd8e1}
+.pdfdoc .verd{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;
+  background:#dceaf4;border:1px solid #0d6b9e;border-radius:5px;padding:7px 11px;font-size:13px}
+.pdfdoc .verd b{font-family:"Rubik",Arial,sans-serif;font-size:16px}
+.pdfdoc .foot2{border-top:2px solid #0d6b9e;margin-top:14px;padding-top:8px;font-size:11px;color:#4d5e6b;text-align:center}
+.toast{position:fixed;inset-block-end:18px;inset-inline-start:50%;transform:translateX(50%);background:#101b24;color:#fff;padding:9px 16px;border-radius:7px;font-size:13px;z-index:50;box-shadow:var(--shadow)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div id="app">
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <div class="idblock">
+        <div class="logo"><img src="apple-touch-icon.png" alt="טיקטין תכנון חשמל" width="111" height="48"></div>
+        <div>
+          <h1>קביעת גודל חיבור וגודל גנרטורים</h1>
+          <div class="sub">פרויקט מגורים / מעורב שימושים עד גובה 128 מ'</div>
+          <div class="ver">גרסת פיתוח <b>V3</b> · 22/09/2026</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn ghost" id="btn-clear" type="button">איפוס הטופס</button>
+        <button class="btn primary" id="btn-xls" type="button">ייצוא לאקסל</button>
+        <button class="btn primary" id="btn-pdf" type="button">ייצוא ל‑PDF</button>
+        <button class="btn primary" id="btn-mail" type="button">שליחה במייל</button>
+        <button class="btn ghost" id="btn-dxf" type="button" disabled
+          title="הכלי בפיתוח — יופעל בגרסה הבאה">ייצור סכמה ורטיקלית <span class="wip">בפיתוח</span></button>
+      </div>
+    </div>
+    <div class="projline">
+      <input id="projname" placeholder="שם הפרויקט" aria-label="שם הפרויקט">
+    </div>
+    <div class="toolbar">
+      <button class="btn primary" id="btn-save" type="button">שמירת הטופס</button>
+      <div class="grp">
+        <label class="f" for="saved-sel" style="margin:0;white-space:nowrap">טפסים שמורים</label>
+        <select id="saved-sel" aria-label="טפסים שמורים"><option value="">— אין —</option></select>
+        <button class="btn tiny" id="btn-load" type="button">טעינה</button>
+        <button class="btn tiny" id="btn-del" type="button">מחיקה</button>
+      </div>
+      <span class="mini" id="save-status"></span>
+    </div>
+  </div>
+</header>
+
+<div class="strip"><div class="in" id="strip"></div></div>
+
+<div class="wrap">
+  <div class="sectitle"><h2>קלט</h2><span class="ln"></span><span class="eyebrow">עומסי יועצים</span></div>
+
+  <section class="card" id="card-basement">
+    <div class="hd"><h2>נתוני המרתף</h2><span class="eyebrow">משותף לפרויקט</span></div>
+    <div class="bd">
+      <div class="row4">
+        <div><label class="f" for="b-area">שטח המרתף (מ״ר)</label><input type="number" id="b-area" min="0" step="10"></div>
+        <div><label class="f" for="b-floors">מספר קומות מרתף</label><input type="text" id="b-floors" inputmode="numeric" placeholder="מספר או: טרם נקבע"></div>
+        <div><label class="f" for="b-parkdev">חניות בפיתוח</label><input type="number" id="b-parkdev" min="0" step="1"></div>
+        <div><label class="f" for="b-parktot">כמות חניות בחניון</label><input type="number" id="b-parktot" min="0" step="1" placeholder="כמות חניות"></div>
+      </div>
+      <div class="sub-h" id="park-title">מקומות חניה בכל קומת מרתף</div>
+      <div class="row4" id="park-rows"></div>
+      <div class="suggest">
+        <div>
+          <span class="mini">הצעת האפליקציה לפי <b>45 מ״ר</b> לחניה:</span>
+          <b id="park-sugg"></b>
+          <span class="mini" id="park-actual"></span>
+        </div>
+        <button class="btn tiny" id="btn-park-apply" type="button">מילוי לפי ההצעה</button>
+      </div>
+      <div class="alertbox" id="park-note" hidden></div>
+      <div class="alertbox" id="park-mismatch" hidden></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="hd"><h2>בניינים</h2><span class="eyebrow">מעליות · גג · מרתף הבניין</span></div>
+    <div class="bd" id="buildings"></div>
+  </section>
+
+  <div class="sep sep-major"><span>מרתף משותף — משותף לכל הבניינים</span></div>
+  <section class="card" id="card-common">
+    <div class="hd"><h2>מרתף משותף</h2><span class="eyebrow">כל לוח משאבות = סט</span></div>
+    <div class="bd"><div class="tbl-wrap"><table id="common-tbl"></table></div></div>
+  </section>
+
+  <section class="card">
+    <div class="hd"><h2>מקדמי חישוב</h2></div>
+    <div class="bd">
+      <div class="row4">
+        <div><label class="f" for="p-hp">כ״ס לקילוואט</label><input type="number" id="p-hp" step="0.001"></div>
+        <div><label class="f" for="p-genpf">cos φ של הגנרטור</label><input type="number" id="p-genpf" step="0.01"></div>
+        <div><label class="f" for="p-connpf">מקדם לחיבור (חלוקה)</label><input type="number" id="p-connpf" step="0.01"></div>
+        <div><label class="f" for="p-amp">אמפר לכל kVA</label><input type="number" id="p-amp" step="0.01"></div>
+        <div><label class="f" for="p-park">אמפר לחניה</label><input type="number" id="p-park" step="0.1"></div>
+        <div><label class="f" for="p-sprink">מכפיל ספרינקלרים</label><input type="number" id="p-sprink" step="0.5"></div>
+        <div><label class="f" for="p-maxhi">בניינים מעל 29 לגנרטור</label><input type="number" id="p-maxhi" step="1" min="1"></div>
+        <div><label class="f" for="p-basegen">המרתף מחובר לגנרטור</label><select id="p-basegen"></select></div>
+        <div><label class="f" for="p-smoke">מפוחי עשן מרתף — kW למ״ר</label><input type="number" id="p-smoke" step="0.001"></div>
+        <div><label class="f">הספק מרבי למפוחי המרתף</label><input type="text" id="p-smokelim" readonly tabindex="-1"></div>
+      </div>
+      <div class="note">
+        <b>ציבורי בניין:</b> סכום כל העומסים ÷ 0.92 = kVA · זרם = kVA × 1.44.<br>
+        <b>ציבורי מרתף:</b> כנ״ל, בתוספת 0.9A לכל מקום חניה.<br>
+        <b>חישוב בזמן אש:</b> משאבות ספרינקלרים ×3 (התנעת כוכב‑משולש, אפשרות עבודה ברוטור תפוס), כל מפוחי שחרור העשן והדיחוס, משאבות כיבוי האש, והמעלית הגדולה בכל בניין — שאר הרכיבים אריתמטי.<br>
+        <b>חישוב רגיל:</b> חיבור אריתמטי של כל עומסי החירום והחיוניים, ללא מקדם שימוש וללא מקדם התנעה.<br>
+        <b>בקרת מפוחי עשן במרתף:</b> אם ההספק שהתקבל מיועץ המפוחים גדול מ‑0.012 kW למ״ר שטח מרתף — מוצגת התרעה לבדיקה מול היועץ.
+      </div>
+    </div>
+  </section>
+
+  <div class="sectitle major"><h2>פלט</h2><span class="ln"></span><span class="eyebrow">רשימות עומסים והמלצות</span></div>
+  <div id="out-buildings"></div>
+  <div id="out-basement"></div>
+  <div id="out-gens"></div>
+
+  <div class="foot">
+    <div class="credit">פותח ע״י יובל טיקטין בסיוע AI</div>
+    גדלי חיבור לפי חברת חשמל: 50–910A · מעל 910A נדרש חיבור מתח גבוה.<br>
+    גדלי גנרטורים לפי קטלוג שמרלינג סינכרו.<br>
+    הנתונים נשמרים בדפדפן שלך בלבד · הערכים הפותחים הם דוגמה להחלפה · הכלי אינו מחליף אישור יועץ בטיחות ורשות הכבאות.
+  </div>
+</div>
+</div>
+
 <script>
 (function(){
 "use strict";
