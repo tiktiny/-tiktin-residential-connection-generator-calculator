@@ -214,7 +214,7 @@ details:not([open])>summary::before{content:"▸ "}
         <div>
           <h1>קביעת גודל חיבור וגודל גנרטורים</h1>
           <div class="sub">פרויקט מגורים / מעורב שימושים עד גובה 128 מ'</div>
-          <div class="ver">גרסת פיתוח <b>V3</b> · 22/09/2026</div>
+          <div class="ver">גרסת פיתוח <b>V4</b> · 29/09/2026</div>
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -331,6 +331,51 @@ var EM="חירום", ES="חיוני", NE="בלתי חיוני";
 var CONN=[50,63,80,100,125,160,200,250,315,400,500,630,800,910];
 var GENS=[10,25,35,45,70,88,100,110,125,150,165,180,220,250,275,300,330,360,400,440,450,500,
           580,630,715,750,825,900,1000,1100,1250,1400,1540,1650,1915,2100,2200,2250,2500,2800];
+/* ---------- הערכת קוטר אגזוז ----------
+   קוטר בסיס = קוטר מוצא הגנרטור לפי נתוני שמרלינג שנבדקו.
+   החישוב הוא הערכה תכנונית בלבד: אורך שקול כולל צנרת ישרה ועד 4 כיפופי 90°.
+   תוצאה סופית יש לאמת מול יצרן המנוע / ספק מערכת הפליטה. */
+var EXH_BASE={
+  10:4,25:4,35:4,45:4,70:4,88:4,100:4,110:4,125:4,150:4,165:4,180:4,
+  220:4,250:4,275:4,300:4,330:4,360:4,400:4,440:6,450:6,500:6,580:6,
+  630:8,715:8,750:8,825:8,900:8,1000:8,1100:10,1250:10,2200:16,2500:16
+};
+var EXH_STD=[4,5,6,8,10,12,14,16,18,20,22,24];
+var EXH_OD_MM={4:114.3,5:141.3,6:168.3,8:219.1,10:273.0,12:323.9,14:355.6,16:406.4,18:457.2,20:508.0,22:559,24:610};
+function exhBase(kva){
+  kva=num(kva);
+  if(EXH_BASE[kva])return EXH_BASE[kva];
+  if(kva<=400)return 4;
+  if(kva<=600)return 6;
+  if(kva<=1000)return 8;
+  if(kva<=1400)return 10;
+  if(kva<=1800)return 12;
+  if(kva<=2150)return 14;
+  if(kva<=2600)return 16;
+  return 18;
+}
+function exhNextStd(x,minv){
+  var need=Math.max(x,minv||0);
+  for(var i=0;i<EXH_STD.length;i++)if(EXH_STD[i]>=need)return EXH_STD[i];
+  return EXH_STD[EXH_STD.length-1];
+}
+function exhOutsideMm(din){
+  var od=EXH_OD_MM[din]||din*25.4;
+  var add=din<=8?100:(din<=16?150:200);
+  return Math.ceil((od+add)/10)*10;
+}
+function exhaustEstimate(kva,horiz,vert,bends){
+  var base=exhBase(kva);
+  var d0m=base*0.0254;
+  var straight=Math.max(0,num(horiz))+Math.max(0,num(vert));
+  var n=Math.max(1,Math.min(4,Math.round(num(bends)||4)));
+  var leq=straight+n*20*d0m;
+  var ref=10;
+  var raw=base*Math.pow(Math.max(ref,leq)/ref,0.20);
+  var dia=exhNextStd(raw,base);
+  return {base:base,dia:dia,outside:exhOutsideMm(dia),leq:leq,bends:n};
+}
+
 
 var ROOF=[
  {key:"solar",  name:"משאבות סחרור למערכת סולארית",         low:NE, high:NE, fire:false, ff:1},
@@ -679,6 +724,39 @@ function genLocRow(g){
   var t=h('<span class="genloc-t"></span>');t.textContent=genLocText(g);wrap.appendChild(t);
   return wrap;
 }
+
+function openExhaustCalc(kva){
+  var ov=h('<div class="modal-ov"></div>');
+  var bx=h('<div class="modal"></div>');
+  bx.innerHTML=
+    '<div class="mt">בדיקת קוטר אגזוז — '+esc(kva)+' kVA</div>'+
+    '<div class="mb">הזן את תוואי האגזוז. החישוב הוא הערכה ראשונית בלבד ואינו מחליף אישור יצרן/ספק.</div>'+
+    '<div class="row4" style="grid-template-columns:1fr 1fr;margin-top:12px">'+
+      '<div><label class="f" for="exh-h">אורך אופקי עד הפיר [מ׳]</label><input id="exh-h" type="number" min="0" step="0.5" value="5"></div>'+
+      '<div><label class="f" for="exh-v">גובה אנכי בפיר [מ׳]</label><input id="exh-v" type="number" min="0" step="0.5" value="30"></div>'+
+    '</div>'+
+    '<div style="margin-top:10px"><label class="f" for="exh-b">כיפופי 90°</label>'+
+      '<select id="exh-b"><option>1</option><option>2</option><option>3</option><option selected>4</option></select>'+
+      '<div class="mini" style="margin-top:4px">עד 4 כיפופים; ברירת המחדל בחישוב היא 4.</div></div>'+
+    '<div id="exh-result" style="margin-top:14px"></div>'+
+    '<div class="ma"><button class="btn primary" id="exh-calc" type="button">חשב</button>'+
+      '<button class="btn" id="exh-close" type="button">סגור</button></div>';
+  function close(){ov.remove();}
+  function calc(){
+    var r=exhaustEstimate(kva,bx.querySelector("#exh-h").value,bx.querySelector("#exh-v").value,bx.querySelector("#exh-b").value);
+    bx.querySelector("#exh-result").innerHTML=
+      '<div class="verdict" style="margin-top:0"><span class="lbl">קוטר אגזוז מוערך</span><strong>'+r.dia+'″</strong></div>'+
+      '<div class="verdict" style="margin-top:8px"><span class="lbl">קוטר חיצוני אחרי בידוד</span><strong>כ־'+r.outside+' מ״מ</strong></div>'+
+      '<div class="note">קוטר מוצא הגנרטור במאגר: '+r.base+'″. ההערכה מתחשבת באורך האופקי, בגובה האנכי וב־'+r.bends+' כיפופי 90°. יש לאמת קוטר סופי מול יצרן המנוע/ספק מערכת הפליטה.</div>';
+  }
+  bx.querySelector("#exh-calc").addEventListener("click",calc);
+  bx.querySelector("#exh-close").addEventListener("click",close);
+  ov.addEventListener("click",function(e){if(e.target===ov)close();});
+  ov.appendChild(bx);document.body.appendChild(ov);
+  bx.querySelector("#exh-h").focus();
+  calc();
+}
+
 function renderParkMismatch(){
   var box=document.getElementById("park-mismatch");if(!box)return;
   if(floorsTBD()){box.hidden=true;return;}
@@ -873,6 +951,11 @@ function renderOut(){
       '<div class="who">'+esc(G.names.join(" · "))+'</div></div>'+
       '<div class="big">'+(G.pick?G.pick:"—")+'<small> kVA</small></div></div>'));
     card.appendChild(genLocRow(G.g));
+    if(G.pick){
+      var exh=h('<div class="calcrow"><span class="lbl">תכנון תוואי פליטת גזים</span><span class="val"><button class="btn tiny primary exh-btn" type="button">בדיקת קוטר אגזוז</button></span></div>');
+      exh.querySelector(".exh-btn").addEventListener("click",function(){openExhaustCalc(G.pick);});
+      card.appendChild(exh);
+    }
     card.appendChild(h(loadTable(G.items,{showSrc:true,fireCol:true,totalLabel:"סה״כ עומסים מוזנים"})));
     var e='';
     if(G.elevNote.length)e='<div class="calcrow"><span class="lbl">מעלית גדולה בחישוב בזמן אש</span><span class="val">'+esc(G.elevNote.join(" · "))+'</span></div>';
