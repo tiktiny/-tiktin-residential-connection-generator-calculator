@@ -248,6 +248,14 @@ details:not([open])>summary::before{content:"▸ "}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
+<style id="tt-input-style">
+/* טיקטין — עריכת שדות אחידה */
+.tt-clear-btn{position:absolute;z-index:9;width:24px;height:24px;padding:0;border:0;border-radius:50%;background:#e7edf1;color:#52636f;font:700 19px/24px Arial,sans-serif;text-align:center;cursor:pointer;box-shadow:none}
+.tt-clear-btn:hover{background:#d9e3e9;color:#132029}
+.tt-clear-btn[hidden]{display:none!important}
+.tt-clear-host{position:relative!important}
+input.tt-clearable{padding-left:36px!important}
+</style>
 <div id="app">
 <header class="top">
   <div class="wrap">
@@ -257,7 +265,7 @@ details:not([open])>summary::before{content:"▸ "}
         <div>
           <h1>קביעת גודל חיבור וגודל גנרטורים</h1>
           <div class="sub">פרויקט מגורים / מעורב שימושים עד גובה 128 מ'</div>
-          <div class="ver">גרסת פיתוח <b>V4</b> · 30/09/2026</div>
+          <div class="ver">גרסה <b>V5</b> · עלתה לרשת 30/09/2026</div>
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -2172,6 +2180,73 @@ if(typeof claude!=="undefined"&&claude.use){
   claude.use("db").then(function(d){if(d){DBH=d;refreshSaves();}},function(){});
 }
 })();
+</script>
+<script id="tt-input-script">
+
+(function(){
+"use strict";
+function ttCanClear(el){
+  if(!(el instanceof HTMLInputElement)||el.disabled||el.readOnly)return false;
+  return !["button","submit","reset","checkbox","radio","file","hidden","range","color"].includes((el.type||"text").toLowerCase());
+}
+function ttPlace(input,btn){
+  var p=input.parentElement;if(!p)return;
+  p.classList.add("tt-clear-host");
+  var left=input.offsetLeft+6;
+  var top=input.offsetTop+Math.max(0,(input.offsetHeight-24)/2);
+  btn.style.left=left+"px";btn.style.top=top+"px";
+}
+function ttEnhance(input){
+  if(!ttCanClear(input)||input.dataset.ttClear==="1")return;
+  input.dataset.ttClear="1";input.classList.add("tt-clearable");
+  var p=input.parentElement;if(!p)return;
+  var btn=document.createElement("button");
+  btn.type="button";btn.className="tt-clear-btn";btn.textContent="×";btn.tabIndex=-1;
+  btn.setAttribute("aria-label","נקה שדה");btn.title="נקה שדה";
+  p.appendChild(btn);
+  function sync(){btn.hidden=!input.value;ttPlace(input,btn);}
+  btn.addEventListener("pointerdown",function(e){e.preventDefault();});
+  btn.addEventListener("click",function(){
+    input.value="";
+    input.dispatchEvent(new Event("input",{bubbles:true}));
+    input.dispatchEvent(new Event("change",{bubbles:true}));
+    input.focus();sync();
+  });
+  input.addEventListener("focus",function(){
+    if(!input.value)return;
+    input.dataset.ttSelectAll="1";
+    requestAnimationFrame(function(){try{input.select();}catch(e){} ttPlace(input,btn);});
+  });
+  input.addEventListener("pointerup",function(e){
+    if(input.dataset.ttSelectAll==="1"&&input.value){
+      e.preventDefault();try{input.select();}catch(x){}
+      delete input.dataset.ttSelectAll;
+    }
+  });
+  input.addEventListener("keydown",function(e){
+    if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Home","End"].includes(e.key))delete input.dataset.ttSelectAll;
+  });
+  input.addEventListener("input",function(){delete input.dataset.ttSelectAll;sync();});
+  input.addEventListener("change",sync);
+  input.addEventListener("blur",function(){delete input.dataset.ttSelectAll;});
+  sync();
+}
+function ttEnhanceAll(root){
+  if(root instanceof HTMLInputElement)ttEnhance(root);
+  if(root.querySelectorAll)root.querySelectorAll("input").forEach(ttEnhance);
+}
+ttEnhanceAll(document);
+new MutationObserver(function(ms){
+  ms.forEach(function(m){m.addedNodes.forEach(function(n){if(n.nodeType===1)ttEnhanceAll(n);});});
+}).observe(document.documentElement,{childList:true,subtree:true});
+window.addEventListener("resize",function(){
+  document.querySelectorAll("input[data-tt-clear='1']").forEach(function(i){
+    var b=Array.from(i.parentElement.children).find(function(x){return x.classList&&x.classList.contains("tt-clear-btn")});
+    if(b)ttPlace(i,b);
+  });
+});
+})();
+
 </script>
 <script>
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}
