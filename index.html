@@ -219,6 +219,15 @@ details:not([open])>summary::before{content:"▸ "}
 .modal .mb{font-size:13.5px;color:var(--ink-2);line-height:1.6}
 .modal .ma{display:flex;gap:8px;justify-content:flex-start;margin-top:16px}
 .btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.exhaust-modal{max-width:520px}
+.exh-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.exh-grid label:last-child{grid-column:1/-1}.exh-grid input,.exh-grid select{width:100%;margin-top:4px}
+.exh-result{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.exh-result>div{background:var(--accent-soft);border:1px solid var(--line);border-radius:8px;padding:12px}
+.exh-result span,.exh-result b{display:block}.exh-result b{font-size:22px;margin-top:3px}
+.exh-result .exh-stale{grid-column:1/-1;background:var(--note-soft);color:var(--note);font-weight:700}
+@media(max-width:680px){.exh-grid,.exh-result{grid-template-columns:1fr}.exh-grid label:last-child{grid-column:auto}.exh-grid input,.exh-grid select{font-size:16px!important}.exhaust-modal{max-width:100%;transform:none!important}}
+
 .pdfdoc{width:794px;background:#fff;color:#132029;font-family:"Heebo",Arial,sans-serif}
 .pdfsec{padding:0 34px 14px;background:#fff}
 .pdfsec:first-child{padding-top:26px}
@@ -265,7 +274,7 @@ input.tt-clearable{padding-left:36px!important}
         <div>
           <h1>קביעת גודל חיבור וגודל גנרטורים</h1>
           <div class="sub">פרויקט מגורים / מעורב שימושים עד גובה 128 מ'</div>
-          <div class="ver">גרסה <b>V6</b> · עלתה לרשת 30/09/2026</div>
+          <div class="ver">גרסה <b>V7</b> · עלתה לרשת 30/09/2026</div>
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -423,6 +432,65 @@ var EM="חירום", ES="חיוני", NE="בלתי חיוני";
 var CONN=[50,63,80,100,125,160,200,250,315,400,500,630,800,910];
 var GENS=[10,25,35,45,70,88,100,110,125,150,165,180,220,250,275,300,330,360,400,440,450,500,
           580,630,715,750,825,900,1000,1100,1250,1400,1540,1650,1915,2100,2200,2250,2500,2800];
+
+/* ---------- חישוב קוטר אגזוז מבוסס נתוני מנוע ---------- */
+var EXH_BASE={10:4,25:4,35:4,45:4,70:4,88:4,100:4,110:4,125:4,150:4,165:4,180:4,220:4,250:4,275:4,300:4,330:4,360:4,400:4,440:6,450:6,500:6,580:6,630:8,715:8,750:8,825:8,900:8,1000:8,1100:10,1250:10,1400:12,1540:12,1650:14,1915:14,2100:14,2200:16,2250:16,2500:16,2800:16};
+var EXH_STD=[4,5,6,8,10,12,14,16,18,20,22,24];
+var EXH_OD_MM={4:114.3,5:141.3,6:168.3,8:219.1,10:273,12:323.9,14:355.6,16:406.4,18:457.2,20:508,22:559,24:610};
+var EXH_ENGINE={
+  220:{q:38.15,t:600,bp:6.0,direct:true},250:{q:44.4,t:600,bp:6.0,direct:true},
+  275:{q:50.6,t:600,bp:6.0,direct:true},300:{q:53.0,t:700,bp:6.0,direct:true},
+  330:{q:58.2,t:550,bp:11.0,direct:true},360:{q:58.3,t:590,bp:5.9,direct:true},
+  400:{q:65.0,t:580,bp:12.0,direct:true},440:{q:69.0,t:580,bp:12.0,direct:true},
+  450:{q:69.0,t:580,bp:12.0,direct:true},500:{q:99.0,t:580,bp:12.0,direct:true},
+  580:{q:106.0,t:562,bp:5.9,direct:true},630:{q:106.0,t:562,bp:5.9,direct:true},
+  715:{q:140.7,t:550,bp:7.5,direct:true},750:{q:108.0,t:502,bp:5.9,direct:true},
+  825:{q:108.0,t:502,bp:5.9,direct:true},900:{q:136.0,t:570,bp:5.9,direct:true},
+  1000:{q:147.0,t:575,bp:5.9,direct:true},1100:{q:201.0,t:500,bp:8.0,direct:true},
+  1250:{q:203.0,t:473,bp:7.0,direct:true},1400:{q:258.0,t:520,bp:5.9,direct:true},
+  1540:{q:312.0,t:520,bp:5.88,direct:true},1650:{q:343.0,t:520,bp:5.9,direct:true},
+  1915:{q:339.0,t:539,bp:5.9,direct:true},2100:{q:343.0,t:524,bp:5.9,direct:true},
+  2200:{q:360.0,t:524,bp:5.9,direct:false},2500:{q:506.0,t:550,bp:5.88,direct:true},
+  2800:{q:536.0,t:550,bp:5.9,direct:true}
+};
+function exhBase(kva){return EXH_BASE[kva]||4;}
+function exhOutsideMm(d){var od=EXH_OD_MM[d]||d*25.4,add=d<=8?100:(d<=16?150:200);return Math.ceil((od+add)/10)*10;}
+function exhProfile(kva){
+  kva=Number(kva)||0;
+  if(EXH_ENGINE[kva])return EXH_ENGINE[kva];
+  if(kva<220)return {q:Math.max(1.8,kva*0.18),t:600,bp:6.0,direct:false};
+  var keys=Object.keys(EXH_ENGINE).map(Number).sort(function(a,b){return a-b;});
+  if(kva<=keys[0])return EXH_ENGINE[keys[0]];
+  if(kva>=keys[keys.length-1])return EXH_ENGINE[keys[keys.length-1]];
+  var lo=keys[0],hi=keys[keys.length-1];
+  for(var i=0;i<keys.length-1;i++){if(kva>keys[i]&&kva<keys[i+1]){lo=keys[i];hi=keys[i+1];break;}}
+  var a=EXH_ENGINE[lo],b=EXH_ENGINE[hi],r=(kva-lo)/(hi-lo);
+  return {q:a.q+(b.q-a.q)*r,t:a.t+(b.t-a.t)*r,bp:Math.min(a.bp,b.bp),direct:false};
+}
+function exhPipeState(dIn,p,straight,bends){
+  var D=dIn*0.0254,area=Math.PI*D*D/4,velocity=(p.q/60)/area,tempK=p.t+273.15;
+  var rho=1.184*298.15/tempK;
+  var mu=1.716e-5*Math.pow(tempK/273.15,1.5)*(273.15+111)/(tempK+111);
+  var re=Math.max(4000,rho*velocity*D/mu),rough=0.00015;
+  var friction=0.25/Math.pow(Math.log10(rough/(3.7*D)+5.74/Math.pow(re,0.9)),2);
+  var equiv=straight+bends*16*D+1.0;
+  var dp=friction*(equiv/D)*(rho*velocity*velocity/2)/1000;
+  return {velocity:velocity,dp:dp};
+}
+function exhaustEstimate(kva,horiz,vert,bends){
+  kva=Number(kva)||0;
+  var base=exhBase(kva),straight=Math.max(0,Number(horiz)||0)+Math.max(0,Number(vert)||0);
+  var n=Math.max(1,Math.min(4,Math.round(Number(bends)||4))),p=exhProfile(kva);
+  var budget=Math.max(0.8,p.bp*0.35),maxVelocity=40,dia=EXH_STD[EXH_STD.length-1],state=null;
+  for(var i=0;i<EXH_STD.length;i++){
+    var d=EXH_STD[i];if(d<base)continue;
+    var s=exhPipeState(d,p,straight,n);
+    if(s.dp<=budget&&s.velocity<=maxVelocity){dia=d;state=s;break;}
+  }
+  if(!state)state=exhPipeState(dia,p,straight,n);
+  return {dia:dia,outside:exhOutsideMm(dia),direct:!!p.direct};
+}
+
 
 var ROOF=[
  {key:"solar",  name:"משאבות סחרור למערכת סולארית",         low:NE, high:NE, fire:false, ff:1},
@@ -931,6 +999,35 @@ function connBox(c,extra,label){
     '<div class="calcrow"><span class="lbl">× '+fmt(num(S.params.amp),2)+' = זרם'+(extra||"")+'</span><span class="val">'+fmt(c.amps,0)+' A</span></div>'+
     '<div class="verdict"><span class="lbl">'+(label||"גודל חיבור מומלץ להזמנה")+'</span><strong>'+pick+'</strong></div>';
 }
+
+function openExhaustCalc(kva){
+  var ov=h('<div class="modal-ov" role="dialog" aria-modal="true"></div>');
+  var bx=h('<div class="modal exhaust-modal"></div>');
+  bx.innerHTML='<div class="mt">בדיקת קוטר אגזוז — '+esc(kva)+' kVA</div>'+
+    '<div class="mb">הזן את תוואי האגזוז. החישוב מבוסס ככל האפשר על נתוני פליטת המנוע וכולל עתודה למשתיק מגורים.</div>'+
+    '<div class="exh-grid">'+
+      '<label class="f">אורך אופקי עד הפיר [מ׳]<input id="exh-h" type="number" min="0" step="0.5" value="5"></label>'+
+      '<label class="f">גובה הפיר עד הגג [מ׳]<input id="exh-v" type="number" min="0" step="0.5" value="30"></label>'+
+      '<label class="f">מספר כיפופי 90°<select id="exh-b"><option>1</option><option>2</option><option>3</option><option selected>4</option></select></label>'+
+    '</div>'+
+    '<div id="exh-result" class="exh-result"><div class="exh-stale">הזן את נתוני התוואי ובסיום לחץ על „חשב קוטר”.</div></div>'+
+    '<div class="ma"><button class="btn primary" id="exh-calc" type="button">חשב קוטר</button><button class="btn" id="exh-close" type="button">סגור</button></div>'+
+    '<div class="note">הערכה ראשונית לתכנון בלבד. יש לאמת קוטר סופי מול יצרן המנוע/ספק מערכת הפליטה.</div>';
+  var res=bx.querySelector("#exh-result");
+  function close(){ov.remove();}
+  function invalidate(){res.innerHTML='<div class="exh-stale">הנתונים השתנו. בסיום הכנסת הערכים לחץ על „חשב קוטר”.</div>';}
+  bx.querySelector("#exh-calc").addEventListener("click",function(){
+    var r=exhaustEstimate(kva,bx.querySelector("#exh-h").value,bx.querySelector("#exh-v").value,bx.querySelector("#exh-b").value);
+    res.innerHTML='<div><span>קוטר אגזוז מוערך</span><b>'+r.dia+'″</b></div>'+
+      '<div><span>קוטר חיצוני אחרי בידוד</span><b>כ־'+r.outside+' מ״מ</b></div>';
+  });
+  bx.querySelector("#exh-h").addEventListener("input",invalidate);
+  bx.querySelector("#exh-v").addEventListener("input",invalidate);
+  bx.querySelector("#exh-b").addEventListener("change",invalidate);
+  bx.querySelector("#exh-close").addEventListener("click",close);
+  ov.addEventListener("click",function(e){if(e.target===ov)close();});
+  ov.appendChild(bx);document.body.appendChild(ov);
+}
 function renderOut(){
   var R=compute();
   /* בניינים */
@@ -965,6 +1062,7 @@ function renderOut(){
       '<div class="who">'+esc(G.names.join(" · "))+'</div></div>'+
       '<div class="big">'+(G.pick?G.pick:"—")+'<small> kVA</small></div></div>'));
     card.appendChild(genLocRow(G.g));
+    if(G.pick){var xb=h('<div class="calcrow"><span class="lbl">תכנון תוואי פליטת גזים</span><span class="val"><button type="button" class="btn tiny primary exh-calc-btn">בדיקת קוטר אגזוז</button></span></div>');xb.querySelector(".exh-calc-btn").addEventListener("click",function(){openExhaustCalc(G.pick);});card.appendChild(xb);}
     card.appendChild(h(loadTable(G.items,{showSrc:true,fireCol:true,totalLabel:"סה״כ עומסים מוזנים"})));
     var e='';
     if(G.elevNote.length)e='<div class="calcrow"><span class="lbl">מעלית גדולה בחישוב בזמן אש</span><span class="val">'+esc(G.elevNote.join(" · "))+'</span></div>';
