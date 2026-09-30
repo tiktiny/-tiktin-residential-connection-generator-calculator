@@ -265,7 +265,7 @@ input.tt-clearable{padding-left:36px!important}
         <div>
           <h1>קביעת גודל חיבור וגודל גנרטורים</h1>
           <div class="sub">פרויקט מגורים / מעורב שימושים עד גובה 128 מ'</div>
-          <div class="ver">גרסה <b>V5</b> · עלתה לרשת 30/09/2026</div>
+          <div class="ver">גרסה <b>V6</b> · עלתה לרשת 30/09/2026</div>
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -2220,8 +2220,18 @@ function ttEnhance(input){
   input.addEventListener("pointerup",function(e){
     if(input.dataset.ttSelectAll==="1"&&input.value){
       e.preventDefault();try{input.select();}catch(x){}
-      delete input.dataset.ttSelectAll;
     }
+  });
+  input.addEventListener("beforeinput",function(e){
+    if(input.dataset.ttSelectAll!=="1")return;
+    var t=String(e.inputType||"");
+    if(["insertText","insertCompositionText","insertReplacementText"].indexOf(t)<0)return;
+    if(e.data==null)return;
+    e.preventDefault();
+    input.value=String(e.data);
+    delete input.dataset.ttSelectAll;
+    input.dispatchEvent(new Event("input",{bubbles:true}));
+    sync();
   });
   input.addEventListener("keydown",function(e){
     if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Home","End"].includes(e.key))delete input.dataset.ttSelectAll;
