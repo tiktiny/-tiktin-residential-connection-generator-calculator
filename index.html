@@ -214,7 +214,7 @@ details:not([open])>summary::before{content:"▸ "}
         <div>
           <h1>קביעת גודל חיבור וגודל גנרטורים</h1>
           <div class="sub">פרויקט מגורים / מעורב שימושים עד גובה 128 מ'</div>
-          <div class="ver">גרסת פיתוח <b>V3</b> · 22/09/2026</div>
+          <div class="ver">גרסה <b>V4</b> · עלתה לרשת 30/09/2026</div>
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -331,6 +331,131 @@ var EM="חירום", ES="חיוני", NE="בלתי חיוני";
 var CONN=[50,63,80,100,125,160,200,250,315,400,500,630,800,910];
 var GENS=[10,25,35,45,70,88,100,110,125,150,165,180,220,250,275,300,330,360,400,440,450,500,
           580,630,715,750,825,900,1000,1100,1250,1400,1540,1650,1915,2100,2200,2250,2500,2800];
+/* ---------- הערכת קוטר אגזוז ----------
+   קוטר בסיס = קוטר מוצא הגנרטור לפי נתוני שמרלינג שנבדקו.
+   החישוב הוא הערכה תכנונית בלבד: אורך שקול כולל צנרת ישרה ועד 4 כיפופי 90°.
+   תוצאה סופית יש לאמת מול יצרן המנוע / ספק מערכת הפליטה. */
+var EXH_BASE={
+  10:4,25:4,35:4,45:4,70:4,88:4,100:4,110:4,125:4,150:4,165:4,180:4,
+  220:4,250:4,275:4,300:4,330:4,360:4,400:4,440:6,450:6,500:6,580:6,
+  630:8,715:8,750:8,825:8,900:8,1000:8,1100:10,1250:10,2200:16,2500:16
+};
+var EXH_STD=[4,5,6,8,10,12,14,16,18,20,22,24];
+var EXH_OD_MM={4:114.3,5:141.3,6:168.3,8:219.1,10:273.0,12:323.9,14:355.6,16:406.4,18:457.2,20:508.0,22:559,24:610};
+function exhBase(kva){
+  kva=num(kva);
+  if(EXH_BASE[kva])return EXH_BASE[kva];
+  if(kva<=400)return 4;
+  if(kva<=600)return 6;
+  if(kva<=1000)return 8;
+  if(kva<=1400)return 10;
+  if(kva<=1800)return 12;
+  if(kva<=2150)return 14;
+  if(kva<=2600)return 16;
+  return 18;
+}
+function exhNextStd(x,minv){
+  var need=Math.max(x,minv||0);
+  for(var i=0;i<EXH_STD.length;i++)if(EXH_STD[i]>=need)return EXH_STD[i];
+  return EXH_STD[EXH_STD.length-1];
+}
+function exhOutsideMm(din){
+  var od=EXH_OD_MM[din]||din*25.4;
+  var add=din<=8?100:(din<=16?150:200);
+  return Math.ceil((od+add)/10)*10;
+}
+function exhaustEstimate(kva,horiz,vert,bends){
+  var base=exhBase(kva);
+  var d0m=base*0.0254;
+  var straight=Math.max(0,num(horiz))+Math.max(0,num(vert));
+  var n=Math.max(1,Math.min(4,Math.round(num(bends)||4)));
+  var leq=straight+n*20*d0m;
+  var ref=10;
+  var raw=base*Math.pow(Math.max(ref,leq)/ref,0.20);
+  var dia=exhNextStd(raw,base);
+  return {base:base,dia:dia,outside:exhOutsideMm(dia),leq:leq,bends:n};
+}
+
+
+
+/* ---------- מאגר נתוני שמרלינג ----------
+   ערכים עם sourceUrl ספציפי אומתו מול עמוד תוצאה נוכחי של שמרלינג.
+   שאר הערכים עד 1250 kVA מבוססים על כרטיס הנתונים/מאגר שמרלינג שנבדק בעבר.
+   אם נתון אינו זמין/מאומת הוא נשאר ריק ולא מומצא. */
+var GEN_SPECS={
+  10:{model:"AP-B10S",dims:"1.65×0.95×1.24",weight:900,exhaust:4,room65:"7.2×3×2.5",airIn65:0.6,airOut65:0.36,canopy:"2.68×1.10×1.71",canopyWeight:1000},
+  25:{model:"AP-B25S",dims:"1.65×0.95×1.24",weight:960,exhaust:4,room65:"7.2×3×2.4",airIn65:0.6,airOut65:0.6,canopy:"2.68×1.10×1.71",canopyWeight:1390,sourceUrl:"https://www.shmerling.co.il/generator/bl-s25-2/"},
+  35:{model:"AP-B35S",dims:"1.65×0.95×1.24",weight:975,exhaust:4,room65:"7.2×3×2.4",airIn65:0.6,airOut65:0.6,canopy:"2.68×1.10×1.71",canopyWeight:1410,sourceUrl:"https://www.shmerling.co.il/generator/bl-s35-2/"},
+  45:{model:"AP-B45S",dims:"1.65×0.95×1.24",weight:975,exhaust:4,room65:"7.2×3×2.4",airIn65:0.6,airOut65:0.6,canopy:"2.68×1.10×1.71",canopyWeight:1390,sourceUrl:"https://www.shmerling.co.il/generator/bl-s45-2/"},
+  70:{model:"AP-B70S",dims:"2.00×0.95×1.24",weight:1450,exhaust:4,room65:"7.5×3.5×2.4",airIn65:1.2,airOut65:1.2,canopy:"2.68×1.10×1.71",canopyWeight:1600,sourceUrl:"https://www.shmerling.co.il/generator/bl-s70-2/"},
+  88:{model:"AP-B88S",dims:"2.00×0.95×1.24",weight:1450,exhaust:4,room65:"7.5×3.5×2.5",airIn65:1.2,airOut65:1.2,canopy:"3.32×1.14×1.71",canopyWeight:1750,sourceUrl:"https://www.shmerling.co.il/generator/bl-s88-3/"},
+  100:{model:"AP-B100S",dims:"2.35×1.10×1.40",weight:1650,exhaust:4,room65:"8.0×3.5×2.5",airIn65:1.4,airOut65:1.4,canopy:"2.78×1.10×1.71",canopyWeight:1900,sourceUrl:"https://www.shmerling.co.il/generator/bl-s100-2/"},
+  110:{model:"AP-B110S",dims:"2.35×1.10×1.40",weight:1720,exhaust:4,room65:"8.0×3.5×2.5",airIn65:1.4,airOut65:1.4,canopy:"3.86×1.24×1.95",canopyWeight:2200},
+  125:{model:"AP-B125S",dims:"2.20×1.01×1.39",weight:1450,exhaust:4,room65:"7.7×3.5×2.5",airIn65:1.49,airOut65:1.43,canopy:"3.86×1.24×1.95",canopyWeight:2200,sourceUrl:"https://www.shmerling.co.il/generator/ap-c125-4/"},
+  150:{model:"AP-B150S",dims:"2.70×1.20×1.54",weight:2050,exhaust:4,room65:"8.3×3.6×2.6",airIn65:2.11,airOut65:2.05,canopy:"4.10×1.24×2.02",canopyWeight:2510,sourceUrl:"https://www.shmerling.co.il/generator/bl-s150-2/"},
+  165:{model:"AP-B165S",dims:"2.70×1.20×1.54",weight:2100,exhaust:4,room65:"8.3×3.6×2.7",airIn65:2.11,airOut65:2.05,canopy:"4.10×1.24×1.86",canopyWeight:2540},
+  180:{model:"AP-B180S",dims:"2.64×1.02×1.73",weight:2300,exhaust:4,room65:"8.3×3.6×2.6",airIn65:2.85,airOut65:2.8,canopy:"4.65×1.15×1.81",canopyWeight:3420,sourceUrl:"https://www.shmerling.co.il/generator/dm-180s-2/"},
+  220:{model:"AP-B220S",dims:"2.67×1.10×1.74",weight:2500,exhaust:4,room65:"8.3×3.6×2.6",airIn65:2.37,airOut65:2.25,canopy:"4.70×1.65×2.38",canopyWeight:3470,sourceUrl:"https://www.shmerling.co.il/generator/dm-220s-2/"},
+  250:{model:"AP-B250S",dims:"3.00×1.10×1.80",weight:2600,exhaust:6,room65:"9.0×3.5×3.0",airIn65:2.9,airOut65:2.8,canopy:"5.10×1.70×2.38",canopyWeight:3500},
+  275:{model:"AP-B275S",dims:"3.00×1.13×1.80",weight:2750,exhaust:6,room65:"9.0×3.6×3.0",airIn65:2.9,airOut65:2.8,canopy:"5.10×1.70×2.36",canopyWeight:2800,sourceUrl:"https://www.shmerling.co.il/generator/ap-b275s/"},
+  300:{model:"AP-C300S",dims:"3.00×1.13×1.80",weight:2750,exhaust:6,room65:"9.0×3.7×3.0",airIn65:2.9,airOut65:2.8,canopy:"7.00×1.65×2.38",canopyWeight:5300},
+  330:{model:"AP-B330S",dims:"3.00×1.16×1.80",weight:2900,exhaust:6,room65:"9.0×3.7×3.0",airIn65:2.9,airOut65:2.8,canopy:"7.00×1.65×2.38",canopyWeight:5450},
+  360:{model:"DM-360S",dims:"3.09×1.35×1.99",weight:3000,exhaust:4,room65:"8.9×3.95×2.7",airIn65:5.5,airOut65:5.3,airRawIn:3.13,airRawOut:2.97,canopy:"7.20×1.60×3.00",canopyWeight:5550,sourceUrl:"https://www.shmerling.co.il/generator/ap-b360s-3/",note:"בעמוד התוצאה הנוכחי מופיעים גם פתחים ללא השתקה 3.13/2.97 מ״ר; ערכי 65dB בכרטיס הנתונים: 5.5/5.3 מ״ר."},
+  400:{model:"AP-B400S",dims:"3.09×1.35×1.99",weight:3200,exhaust:4,room65:"8.9×3.95×2.7",airIn65:3.46,airOut65:3.3,canopy:"7.20×1.45×2.25",canopyWeight:5750,sourceUrl:"https://www.shmerling.co.il/generator/dm-400s-2/"},
+  440:{model:"AP-B450S",dims:"3.50×1.40×2.00",weight:3450,exhaust:6,room65:"9.5×4.0×3.0",airIn65:5.5,airOut65:5.3,canopy:"7.20×1.60×3.00",canopyWeight:6000},
+  450:{model:"AP-B450S",dims:"3.50×1.40×2.00",weight:3450,exhaust:6,room65:"9.5×4.0×3.0",airIn65:5.5,airOut65:5.3,canopy:"7.20×1.60×3.00",canopyWeight:6000,note:"450 kVA משויך באפליקציה לאותו דגם/טווח של AP-B450S."},
+  500:{model:"AP-B500S",dims:"3.50×1.40×2.00",weight:3550,exhaust:6,room65:"9.5×4.1×3.0",airIn65:5.5,airOut65:5.3,canopy:"7.20×1.45×2.25",canopyWeight:6100,sourceUrl:"https://www.shmerling.co.il/generator/ap-d500-2/"},
+  580:{model:"DM-580S",dims:"3.64×1.50×2.05",weight:4350,exhaust:6,room65:"9.5×4.3×3.2",airIn65:5.17,airOut65:4.95,canopy:"7.60×1.75×2.18",canopyWeight:6700,sourceUrl:"https://www.shmerling.co.il/generator/dm-580s-3/"},
+  630:{model:"DM-630S",dims:"3.70×1.50×2.05",weight:5150,exhaust:8,room65:"9.5×4.3×3.2",airIn65:5.5,airOut65:5.3,canopy:"7.60×1.75×2.18",canopyWeight:7500,sourceUrl:"https://www.shmerling.co.il/generator/dm-630s-2/"},
+  715:{model:"AP-B715S",dims:"3.68×1.93×2.25",weight:5900,exhaust:8,room65:"9.6×4.7×3.4",airIn65:5.39,airOut65:5.06,canopy:"8.00×2.30×3.40",canopyWeight:8500,sourceUrl:"https://www.shmerling.co.il/generator/ap-b715s-3/"},
+  750:{model:"DM-750S",dims:"3.64×1.50×2.30",weight:5500,exhaust:8,room65:"9.5×4.3×3.4",airIn65:6.38,airOut65:6.05,canopy:"7.30×1.90×3.50",canopyWeight:7650,sourceUrl:"https://www.shmerling.co.il/generator/dm-750s-3/"},
+  825:{model:"DM-825S",dims:"3.64×1.50×2.04",weight:5700,exhaust:8,room65:"9.4×4.3×3.3",airIn65:6.38,airOut65:6.05,canopy:"7.30×1.90×3.50",canopyWeight:7650,sourceUrl:"https://www.shmerling.co.il/generator/dm-825s-3/"},
+  900:{model:"DM-900S",dims:"3.69×1.81×2.35",weight:6300,exhaust:8,room65:"9.6×4.65×3.4",airIn65:9.24,airOut65:8.91,canopy:"7.80×2.00×3.59",canopyWeight:8900,sourceUrl:"https://www.shmerling.co.il/generator/dm-900s-3/"},
+  1000:{model:"DM-1000S",dims:"3.69×1.81×2.35",weight:6500,exhaust:8,room65:"9.6×4.65×3.4",airIn65:9.24,airOut65:8.91,canopy:"7.80×2.00×3.59",canopyWeight:9100,sourceUrl:"https://www.shmerling.co.il/generator/dm-1000s-3/"},
+  1100:{model:"AP-P1100S",dims:"4.72×2.10×2.40",weight:8950,exhaust:10,room65:"11.0×4.75×3.7",airIn65:10.5,airOut65:9.7,canopy:"8.95×2.40×3.65",canopyWeight:16100},
+  1250:{model:"AP-P1250S",dims:"4.70×2.14×2.40",weight:9600,exhaust:10,room65:"11.0×4.75×3.7",airIn65:10.5,airOut65:9.7,canopy:"8.95×2.40×3.65",canopyWeight:16700,sourceUrl:"https://www.shmerling.co.il/generator/ap-p1250-%D7%9E%D7%9B%D7%95%D7%9C%D7%94-2/"},
+  1400:{model:"—",exhaust:10,note:"הספק קיים ברשימת הבחירה; לא נמצא עמוד שמרלינג מלא ומאומת במקור הזמין כעת."},
+  1540:{model:"—",exhaust:12,note:"הספק קיים ברשימת הבחירה; נתוני גוף/חדר מלאים לא נמצאו בעמוד מאומת."},
+  1650:{model:"AP-T1650S",exhaust:12,canopy:"8.00×2.50×3.85",canopyWeight:18900,sourceUrl:"https://www.shmerling.co.il/generator/ap-t1650-%D7%9E%D7%9B%D7%95%D7%9C%D7%94/",note:"עמוד שמרלינג הזמין מציג נתוני חופה; יתר הנתונים לא הוצגו במקור הזמין."},
+  1915:{model:"—",exhaust:14,note:"הספק קיים ברשימת הבחירה; נתוני גוף/חדר מלאים לא נמצאו בעמוד מאומת."},
+  2100:{model:"AP-T2100S",dims:"5.24×2.30×2.52",weight:13000,exhaust:14,roomRaw:"7.7×5.2×4.2",airRawIn:5.5,airRawOut:5.2,note:"נתוני תכנון ללא השתקה; נתוני 65dB מלאים לא נמצאו בעמוד מאומת."},
+  2200:{model:"AP-T2200S",dims:"5.80×2.30×2.87",weight:14700,exhaust:16,room65:"12.0×5.2×4.4",airIn65:16.39,airOut65:15.29,sourceUrl:"https://www.shmerling.co.il/generator/ap-t2200-2/"},
+  2250:{model:"—",exhaust:16,note:"הספק קיים ברשימת הבחירה; נתוני גוף/חדר מלאים לא נמצאו בעמוד מאומת."},
+  2500:{model:"AP-T2500S",dims:"5.94×2.46×3.20",weight:15600,exhaust:16,room75:"11.2×5.5×4.4",airIn75:18.7,airOut75:17.4,roomRaw:"8.2×5.5×4.4",airRawIn:6.7,airRawOut:6.3,sourceUrl:"https://www.shmerling.co.il/generator/t-2500/",note:"נמצאו נתוני 75dB וללא השתקה; עמוד 65dB מלא לא נמצא במקור הזמין."},
+  2800:{model:"—",exhaust:18,note:"הספק קיים ברשימת הבחירה; קוטר 18″ הוא הערכת תכנון בלבד עד לאימות דגם המנוע/שמרלינג."}
+};
+var SHMERLING_CALC_URL="https://www.shmerling.co.il/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%99%D7%95%D7%A2%D7%A6%D7%99%D7%9D/";
+var GEN_SPECS_VERIFIED="30/09/2026";
+
+function specVal(v,unit){
+  return (v===undefined||v===null||v==="")?"—":esc(v)+(unit||"");
+}
+function genSpecBox(kva){
+  var s=GEN_SPECS[kva]||{};
+  var src=s.sourceUrl||SHMERLING_CALC_URL;
+  var rows=[
+    ["דגם",s.model||"—"],
+    ["מידות גנרטור",s.dims?specVal(s.dims," מ׳"):"—"],
+    ["משקל גנרטור",s.weight?specVal(s.weight," ק״ג"):"—"],
+    ["קוטר יציאת אגזוז",s.exhaust?specVal(s.exhaust,"″"):"—"],
+    ["חדר 65 dB",s.room65?specVal(s.room65," מ׳"):"—"],
+    ["פתח יניקת אוויר 65 dB",s.airIn65!=null?specVal(s.airIn65," מ״ר"):"—"],
+    ["פתח פליטת אוויר 65 dB",s.airOut65!=null?specVal(s.airOut65," מ״ר"):"—"],
+    ["מידות חופה 65 dB",s.canopy?specVal(s.canopy," מ׳"):"—"],
+    ["משקל חופה",s.canopyWeight?specVal(s.canopyWeight," ק״ג"):"—"]
+  ];
+  if(s.room75)rows.push(["חדר 75 dB",specVal(s.room75," מ׳")]);
+  if(s.airIn75!=null)rows.push(["פתח יניקה 75 dB",specVal(s.airIn75," מ״ר")]);
+  if(s.airOut75!=null)rows.push(["פתח פליטה 75 dB",specVal(s.airOut75," מ״ר")]);
+  if(s.roomRaw)rows.push(["חדר ללא השתקה",specVal(s.roomRaw," מ׳")]);
+  if(s.airRawIn!=null)rows.push(["פתח יניקה ללא השתקה",specVal(s.airRawIn," מ״ר")]);
+  if(s.airRawOut!=null)rows.push(["פתח פליטה ללא השתקה",specVal(s.airRawOut," מ״ר")]);
+  var body=rows.map(function(r){return '<div class="calcrow"><span class="lbl">'+r[0]+'</span><span class="val">'+r[1]+'</span></div>';}).join("");
+  var note=s.note?'<div class="note" style="padding:8px 13px;margin:0">'+esc(s.note)+'</div>':"";
+  return '<details class="gen-spec"><summary>נתוני גנרטור וחדר — שמרלינג</summary>'+
+    '<div class="mini" style="padding:8px 13px">מקור: שמרלינג · אימות מאגר: '+GEN_SPECS_VERIFIED+
+    ' · <a href="'+esc(src)+'" target="_blank" rel="noopener">פתיחת המקור</a></div>'+body+note+'</details>';
+}
 
 var ROOF=[
  {key:"solar",  name:"משאבות סחרור למערכת סולארית",         low:NE, high:NE, fire:false, ff:1},
@@ -679,6 +804,39 @@ function genLocRow(g){
   var t=h('<span class="genloc-t"></span>');t.textContent=genLocText(g);wrap.appendChild(t);
   return wrap;
 }
+
+function openExhaustCalc(kva){
+  var ov=h('<div class="modal-ov"></div>');
+  var bx=h('<div class="modal"></div>');
+  bx.innerHTML=
+    '<div class="mt">בדיקת קוטר אגזוז — '+esc(kva)+' kVA</div>'+
+    '<div class="mb">הזן את תוואי האגזוז. החישוב הוא הערכה ראשונית בלבד ואינו מחליף אישור יצרן/ספק.</div>'+
+    '<div class="row4" style="grid-template-columns:1fr 1fr;margin-top:12px">'+
+      '<div><label class="f" for="exh-h">אורך אופקי עד הפיר [מ׳]</label><input id="exh-h" type="number" min="0" step="0.5" value="5"></div>'+
+      '<div><label class="f" for="exh-v">גובה אנכי בפיר [מ׳]</label><input id="exh-v" type="number" min="0" step="0.5" value="30"></div>'+
+    '</div>'+
+    '<div style="margin-top:10px"><label class="f" for="exh-b">כיפופי 90°</label>'+
+      '<select id="exh-b"><option>1</option><option>2</option><option>3</option><option selected>4</option></select>'+
+      '<div class="mini" style="margin-top:4px">עד 4 כיפופים; ברירת המחדל בחישוב היא 4.</div></div>'+
+    '<div id="exh-result" style="margin-top:14px"></div>'+
+    '<div class="ma"><button class="btn primary" id="exh-calc" type="button">חשב</button>'+
+      '<button class="btn" id="exh-close" type="button">סגור</button></div>';
+  function close(){ov.remove();}
+  function calc(){
+    var r=exhaustEstimate(kva,bx.querySelector("#exh-h").value,bx.querySelector("#exh-v").value,bx.querySelector("#exh-b").value);
+    bx.querySelector("#exh-result").innerHTML=
+      '<div class="verdict" style="margin-top:0"><span class="lbl">קוטר אגזוז מוערך</span><strong>'+r.dia+'″</strong></div>'+
+      '<div class="verdict" style="margin-top:8px"><span class="lbl">קוטר חיצוני אחרי בידוד</span><strong>כ־'+r.outside+' מ״מ</strong></div>'+
+      '<div class="note">קוטר מוצא הגנרטור במאגר: '+r.base+'″. ההערכה מתחשבת באורך האופקי, בגובה האנכי וב־'+r.bends+' כיפופי 90°. יש לאמת קוטר סופי מול יצרן המנוע/ספק מערכת הפליטה.</div>';
+  }
+  bx.querySelector("#exh-calc").addEventListener("click",calc);
+  bx.querySelector("#exh-close").addEventListener("click",close);
+  ov.addEventListener("click",function(e){if(e.target===ov)close();});
+  ov.appendChild(bx);document.body.appendChild(ov);
+  bx.querySelector("#exh-h").focus();
+  calc();
+}
+
 function renderParkMismatch(){
   var box=document.getElementById("park-mismatch");if(!box)return;
   if(floorsTBD()){box.hidden=true;return;}
@@ -873,6 +1031,12 @@ function renderOut(){
       '<div class="who">'+esc(G.names.join(" · "))+'</div></div>'+
       '<div class="big">'+(G.pick?G.pick:"—")+'<small> kVA</small></div></div>'));
     card.appendChild(genLocRow(G.g));
+    if(G.pick)card.insertAdjacentHTML("beforeend",genSpecBox(G.pick));
+    if(G.pick){
+      var exh=h('<div class="calcrow"><span class="lbl">תכנון תוואי פליטת גזים</span><span class="val"><button class="btn tiny primary exh-btn" type="button">בדיקת קוטר אגזוז</button></span></div>');
+      exh.querySelector(".exh-btn").addEventListener("click",function(){openExhaustCalc(G.pick);});
+      card.appendChild(exh);
+    }
     card.appendChild(h(loadTable(G.items,{showSrc:true,fireCol:true,totalLabel:"סה״כ עומסים מוזנים"})));
     var e='';
     if(G.elevNote.length)e='<div class="calcrow"><span class="lbl">מעלית גדולה בחישוב בזמן אש</span><span class="val">'+esc(G.elevNote.join(" · "))+'</span></div>';
