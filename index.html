@@ -162,6 +162,10 @@ td.warnrow{background:var(--danger-soft);color:var(--danger);font-weight:600;tex
 
 
 /* ===== הסבר חישוב ===== */
+.purprow td{background:var(--surface-2);border-top:0}
+.purprow .purpq{font-size:12.5px;color:var(--ink-2);font-weight:500;padding-inline-start:18px}
+.purprow select{max-width:330px}
+.purphint{font-size:11.5px;color:var(--ink-2);margin-inline-start:10px}
 .calcrow.sub .lbl{padding-inline-start:14px;color:var(--ink-2);font-size:12.5px}
 .whybtn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
   margin-inline-start:7px;padding:0;border:1px solid var(--line);border-radius:50%;
@@ -302,7 +306,7 @@ input.tt-clearable{padding-left:36px!important}
         <div>
           <h1>קביעת גודל חיבור וגודל גנרטורים</h1>
           <div class="sub">פרויקט מגורים / מעורב שימושים עד גובה 128 מ'</div>
-          <div class="ver">גרסה <b>V9</b> · עלתה לרשת 13/10/2026</div>
+          <div class="ver">גרסה <b>V10</b> · עלתה לרשת 13/10/2026</div>
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -532,11 +536,19 @@ var BASE=[
  {key:"fill",   name:"משאבות מילוי מאגרים על הגג",           low:ES, high:EM, fire:false, ff:1},
  {key:"bfire",  name:"משאבות כיבוי אש (מרתף)",               low:ES, high:EM, fire:true,  ff:1}
 ];
+/* מטרת סט משאבות הניקוז — היא שקובעת אם הסט חירום או חיוני */
+var PURP=[
+ {v:"proom", t:"ניקוז חדר משאבות ספרינקלרים / כיבוי אש", g:"חירום"},
+ {v:"gen",   t:"ניקוז כללי של המרתף",                    g:"חיוני"}
+];
+function purpOf(v,def){var x=v&&v.purp;return x||def;}
+function purpText(pv){for(var i=0;i<PURP.length;i++)if(PURP[i].v===pv)return PURP[i].t;return "";}
+function purpGroup(pv){for(var i=0;i<PURP.length;i++)if(PURP[i].v===pv)return PURP[i].g;return ES;}
 var COMMON=[
  {key:"csmoke", name:"מפוחי שחרור עשן מרתף",     group:EM, fire:true,  ff:1},
  {key:"cspr",   name:"משאבות ספרינקלרים",        group:EM, fire:true,  ff:"S"},
- {key:"cproom", name:"משאבות ניקוז חדרי משאבות", group:EM, fire:false, ff:1},
- {key:"cdrain", name:"משאבות ניקוז מרתף",        group:ES, fire:false, ff:1},
+ {key:"cproom", name:"משאבות ניקוז חדרי משאבות", group:EM, fire:false, ff:1, purp:true},
+ {key:"cdrain", name:"משאבות ניקוז מרתף",        group:ES, fire:false, ff:1, purp:true},
  {key:"csew",   name:"משאבות ביוב",              group:ES, fire:false, ff:1}
 ];
 
@@ -622,8 +634,10 @@ function bldItems(b,bname){
 function commonItems(){
   var out=[];
   for(var i=0;i<COMMON.length;i++){var t=COMMON[i],v=S.basement.items[i]||{qty:0,p:0,u:"kW"};
-    out.push({src:"מרתף משותף",name:t.name,loc:"מרתף",qty:num(v.qty),unit:kw(v.p,v.u),
-      group:(v.g||t.group),fire:t.fire,ff:ffv(t.ff),elev:false});}
+    var dg=t.purp?purpGroup(purpOf(v,t.key==="cproom"?"proom":"gen")):t.group;
+    out.push({src:"מרתף משותף",name:t.name+(t.purp?(" — "+purpText(purpOf(v,t.key==="cproom"?"proom":"gen"))):""),
+      loc:"מרתף",qty:num(v.qty),unit:kw(v.p,v.u),
+      group:(v.g||dg),fire:t.fire,ff:ffv(t.ff),elev:false});}
   out=out.concat(exItems(S.basement.extra,"מרתף משותף","מרתף"));
   return markFire(out);
 }
@@ -1007,11 +1021,27 @@ function renderBuildings(){
     host.appendChild(card);
   });
 }
+/* שאלת מטרת המשאבות — מופיעה מתחת לכל סט משאבות ניקוז */
+function purpRow(tmpl,v,dp){
+  var cur=purpOf(v,dp);
+  var opts=PURP.map(function(o){
+    return '<option value="'+o.v+'"'+(o.v===cur?" selected":"")+'>'+esc(o.t)+' · '+esc(o.g)+'</option>';}).join("");
+  var tr=document.createElement("tr");tr.className="purprow";
+  tr.innerHTML='<td class="name purpq">מה מטרת המשאבות?</td>'+
+    '<td colspan="6"><select class="purpsel" aria-label="מטרת סט משאבות הניקוז">'+opts+'</select>'+
+    '<span class="purphint">המטרה קובעת אם הסט חירום או חיוני</span></td>';
+  tr.querySelector(".purpsel").addEventListener("change",function(e){
+    v.purp=e.target.value; v.g=undefined; render();});
+  return tr;
+}
 function renderCommon(){
   var t=document.getElementById("common-tbl");t.innerHTML=inThead();
   var tb=document.createElement("tbody");
   COMMON.forEach(function(c,ci){if(!S.basement.items[ci])S.basement.items[ci]={qty:0,p:0,u:"kW"};
-    tb.appendChild(itemRow(c,S.basement.items[ci],c.group));
+    var dp=(c.key==="cproom"?"proom":"gen");
+    var defg=c.purp?purpGroup(purpOf(S.basement.items[ci],dp)):c.group;
+    tb.appendChild(itemRow(c,S.basement.items[ci],defg));
+    if(c.purp)tb.appendChild(purpRow(c,S.basement.items[ci],dp));
     if(c.key==="csmoke"){
       var wr=document.createElement("tr");wr.id="smoke-warn";wr.hidden=true;
       wr.innerHTML='<td colspan="7" class="warnrow"></td>';
