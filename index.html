@@ -161,6 +161,16 @@ td.warnrow{background:var(--danger-soft);color:var(--danger);font-weight:600;tex
 .card .hd #btn-params-lock{margin-inline-start:auto}
 
 
+
+/* ===== גודל התצוגה — ללא שינוי הגדרות הדפדפן ===== */
+html.uz .wrap,html.uz .strip .in,html.uz .modal,html.uz .toast{zoom:var(--uz)!important}
+.zoombox{display:inline-flex;align-items:center;gap:4px}
+.zv-wrap{display:inline-flex;align-items:center;gap:2px;font-weight:700}
+#z-val{width:66px;padding:6px 6px;text-align:center;font-weight:700;border:1px solid var(--line);
+  border-radius:8px;background:#fff;color:var(--ink);font:inherit;font-size:13px}
+.zoombox .btn{min-width:38px;font-weight:700}
+#z-save.dirty{background:var(--accent);color:#fff;border-color:var(--accent)}
+
 /* ===== הסבר חישוב ===== */
 .purprow td{background:var(--surface-2);border-top:0}
 .purprow .purpq{font-size:12.5px;color:var(--ink-2);font-weight:500;padding-inline-start:18px}
@@ -306,10 +316,11 @@ input.tt-clearable{padding-left:36px!important}
         <div>
           <h1>קביעת גודל חיבור וגודל גנרטורים</h1>
           <div class="sub">פרויקט מגורים / מעורב שימושים עד גובה 128 מ'</div>
-          <div class="ver">גרסה <b>V10</b> · עלתה לרשת 13/10/2026</div>
+          <div class="ver">גרסה <b>V11</b> · עלתה לרשת 13/10/2026</div>
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span class="zoombox" role="group" aria-label="גודל התצוגה"><button type="button" class="btn ghost" id="z-out" title="הקטנת התצוגה">−</button><span class="zv-wrap"><input type="number" id="z-val" data-no-clear min="50" max="300" step="5" inputmode="numeric" title="גודל התצוגה באחוזים — אפשר להקליד ערך. שדה ריק = גודל רגיל" aria-label="גודל התצוגה באחוזים"><span>%</span></span><button type="button" class="btn ghost" id="z-in" title="הגדלת התצוגה">+</button><button type="button" class="btn ghost" id="z-save" title="שמירת הגודל הנוכחי — יישאר בפעם הבאה שתפתח את הטופס במחשב ובדפדפן הזה">שמירת גודל</button></span>
         <button class="btn ghost" id="btn-clear" type="button">איפוס הטופס</button>
         <button class="btn primary" id="btn-xls" type="button">ייצוא לאקסל</button>
         <button class="btn primary" id="btn-pdf" type="button">ייצוא ל‑PDF</button>
@@ -1438,6 +1449,43 @@ function normalize(){
 
 
 
+
+/* ===== גודל התצוגה — בלתי תלוי בזום של הדפדפן ===== */
+(function(){
+  var K="tiktin-gen-zoom";
+  function auto(){return 1;}                       /* הטופס כבר בנוי לרוחב מסך מלא */
+  function cl(v){return Math.max(0.5,Math.min(3,Math.round(v*20)/20));}
+  var saved=null;
+  try{var sv=parseFloat(localStorage.getItem(K));if(sv)saved=cl(sv);}catch(e){}
+  var z=saved;
+  function el(id){return document.getElementById(id);}
+  function apply(){
+    var h=document.documentElement, zi=el("z-val"), zs=el("z-save");
+    if(z){h.classList.add("uz");h.style.setProperty("--uz",z);}
+    else{h.classList.remove("uz");h.style.removeProperty("--uz");}
+    if(zi&&document.activeElement!==zi)zi.value=Math.round((z||auto())*100);
+    if(zs)zs.classList.toggle("dirty",(z||null)!==(saved||null));
+  }
+  function step(d){z=cl((z||auto())+d*0.1);apply();}
+  function bindZoom(){
+    var zi=el("z-val"),zs=el("z-save");
+    el("z-in").addEventListener("click",function(){step(1);});
+    el("z-out").addEventListener("click",function(){step(-1);});
+    zi.addEventListener("change",function(){
+      var v=parseFloat(zi.value);z=v?cl(v/100):null;zi.blur();apply();});
+    zi.addEventListener("keydown",function(e){
+      if(e.key==="Enter"){e.preventDefault();zi.dispatchEvent(new Event("change"));}});
+    zs.addEventListener("click",function(){
+      saved=z;
+      try{if(z)localStorage.setItem(K,z);else localStorage.removeItem(K);}catch(e){}
+      apply();
+      toast(z?("הגודל "+Math.round(z*100)+"% נשמר — יישאר בפעם הבאה שתפתח את הטופס")
+             :"נשמר: גודל רגיל");});
+    apply();
+  }
+  window.bindZoom=bindZoom;
+})();
+
 /* ==================== הסבר: כיצד חושב כל ערך ==================== */
 function whyBtn(kind,arg){
   return '<button type="button" class="whybtn" data-why="'+kind+'" data-arg="'+esc(String(arg))+'" '+
@@ -2001,6 +2049,7 @@ function pdfBind(){
 }
 
 function bind(){
+  bindZoom();
   pdfBind();
   document.getElementById("projname").addEventListener("input",function(e){S.project.name=e.target.value;save();});
   document.getElementById("btn-save").addEventListener("click",doSave);
@@ -2513,6 +2562,7 @@ if(typeof claude!=="undefined"&&claude.use){
 "use strict";
 function ttCanClear(el){
   if(!(el instanceof HTMLInputElement)||el.disabled||el.readOnly)return false;
+  if(el.id==="z-val"||el.hasAttribute("data-no-clear"))return false;   /* שדה גודל התצוגה — ללא כפתור ניקוי */
   return !["button","submit","reset","checkbox","radio","file","hidden","range","color"].includes((el.type||"text").toLowerCase());
 }
 function ttPlace(input,btn){
