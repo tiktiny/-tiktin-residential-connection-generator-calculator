@@ -160,6 +160,29 @@ td.gcell.c-ne select,td.gcell.c-open select{background:var(--surface);color:var(
 td.warnrow{background:var(--danger-soft);color:var(--danger);font-weight:600;text-align:start;white-space:normal;font-size:13.5px}
 .card .hd #btn-params-lock{margin-inline-start:auto}
 
+
+/* ===== הסבר חישוב ===== */
+.calcrow.sub .lbl{padding-inline-start:14px;color:var(--ink-2);font-size:12.5px}
+.whybtn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+  margin-inline-start:7px;padding:0;border:1px solid var(--line);border-radius:50%;
+  background:var(--surface);color:var(--accent);font:700 13px/1 Arial,sans-serif;cursor:pointer;vertical-align:middle}
+.whybtn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.modal.calc{max-width:660px}
+.modal.calc .mb{max-height:66vh;overflow:auto}
+.why h4{font-family:"Rubik",sans-serif;font-size:13.5px;font-weight:600;color:var(--ink);margin:14px 0 6px}
+.why h4:first-child{margin-top:0}
+.why p{margin:0 0 8px;font-size:13px;line-height:1.65}
+.why table{width:100%;border-collapse:collapse;font-size:12.5px;margin:4px 0 8px}
+.why th,.why td{border-bottom:1px solid var(--line-2);padding:4px 6px;text-align:right}
+.why th{color:var(--ink-2);font-weight:500;font-size:11.5px}
+.why td.n{text-align:left;font-variant-numeric:tabular-nums;white-space:nowrap}
+.why tr.sum td{font-weight:700;border-top:1px solid var(--line);border-bottom:0}
+.why .f{background:var(--surface-2);border:1px solid var(--line-2);border-radius:8px;
+  padding:9px 12px;font-size:13px;margin:4px 0 10px;line-height:1.8}
+.why .f b{font-variant-numeric:tabular-nums}
+.why .win{background:var(--accent-soft);border-color:var(--accent)}
+.why .mutenote{font-size:12px;color:var(--ink-2);line-height:1.6;margin-top:10px}
+
 /* ===== קריאת עומסי יועצים מ‑PDF ===== */
 .infobox{background:var(--surface-2);color:var(--ink-2);font-size:13px;font-weight:400;line-height:1.65;padding:11px 14px;border:1px solid var(--line-2);border-radius:10px;margin-bottom:10px}
 .infobox b{color:var(--ink)}
@@ -239,7 +262,11 @@ details:not([open])>summary::before{content:"▸ "}
 .pdfdoc .sh{font-family:"Rubik",Arial,sans-serif;font-weight:600;font-size:15px;color:#0d6b9e;
   border-right:5px solid #0d6b9e;padding:4px 10px 4px 0;margin:14px 0 8px;background:#eef4f9}
 .pdfdoc .sh .sub{font-family:"Heebo",Arial,sans-serif;font-weight:400;font-size:12px;color:#4d5e6b}
-.pdfdoc table{width:100%;border-collapse:collapse;font-size:11.5px}
+.pdfdoc table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:11px;word-break:normal;overflow-wrap:normal}
+.pdfdoc th,.pdfdoc td{white-space:normal}
+.pdfdoc th{font-size:10.5px}
+.pdfdoc td.name,.pdfdoc td.s,.pdfdoc th{overflow-wrap:break-word}
+.pdfsec{overflow:visible}
 .pdfdoc th{background:#0d6b9e;color:#fff;font-weight:600;padding:5px 6px;border:1px solid #b9c7d2;text-align:center}
 .pdfdoc td{padding:4px 6px;border:1px solid #cdd8e1;text-align:center}
 .pdfdoc td.name,.pdfdoc td.s{text-align:right}
@@ -275,7 +302,7 @@ input.tt-clearable{padding-left:36px!important}
         <div>
           <h1>קביעת גודל חיבור וגודל גנרטורים</h1>
           <div class="sub">פרויקט מגורים / מעורב שימושים עד גובה 128 מ'</div>
-          <div class="ver">גרסה <b>V8</b> · עלתה לרשת 30/09/2026</div>
+          <div class="ver">גרסה <b>V9</b> · עלתה לרשת 13/10/2026</div>
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -402,7 +429,7 @@ input.tt-clearable{padding-left:36px!important}
       <div class="note">
         <b>ציבורי בניין:</b> סכום כל העומסים ÷ 0.92 = kVA · זרם = kVA × 1.44.<br>
         <b>ציבורי מרתף:</b> כנ״ל, בתוספת 0.9A לכל מקום חניה.<br>
-        <b>חישוב בזמן אש:</b> משאבות ספרינקלרים ×3 (התנעת כוכב‑משולש, אפשרות עבודה ברוטור תפוס), כל מפוחי שחרור העשן והדיחוס, משאבות כיבוי האש, והמעלית הגדולה בכל בניין — שאר הרכיבים אריתמטי.<br>
+        <b>חישוב בזמן אש:</b> משאבות ספרינקלרים — משאבה אחת ×3 (התנעת כוכב‑משולש, אפשרות עבודה ברוטור תפוס) והשאר ×1; כל מפוחי שחרור העשן והדיחוס; משאבות כיבוי האש; והמעלית הגדולה בכל בניין בלבד, פעם אחת — שאר הרכיבים אריתמטי.<br>
         <b>חישוב רגיל:</b> חיבור אריתמטי של כל עומסי החירום והחיוניים, ללא מקדם שימוש וללא מקדם התנעה.<br>
         <b>בקרת מפוחי עשן במרתף:</b> אם ההספק שהתקבל מיועץ המפוחים גדול מ‑0.012 kW למ״ר שטח מרתף — מוצגת התרעה לבדיקה מול היועץ.
       </div>
@@ -590,7 +617,7 @@ function bldItems(b,bname){
     out.push({src:bname,name:t2.name,loc:"מרתף",qty:num(v2.qty),unit:kw(v2.p,v2.u),
       group:(v2.g||(bhigh(b)?t2.high:t2.low)),fire:t2.fire,ff:ffv(t2.ff),elev:false});}
   out=out.concat(exItems(b.exBase,bname,"מרתף"));
-  return out;
+  return markFire(out);
 }
 function commonItems(){
   var out=[];
@@ -598,9 +625,34 @@ function commonItems(){
     out.push({src:"מרתף משותף",name:t.name,loc:"מרתף",qty:num(v.qty),unit:kw(v.p,v.u),
       group:(v.g||t.group),fire:t.fire,ff:ffv(t.ff),elev:false});}
   out=out.concat(exItems(S.basement.extra,"מרתף משותף","מרתף"));
-  return out;
+  return markFire(out);
 }
 function tot(it){return it.qty*it.unit;}
+/* ---------- תרומה לחישוב בזמן אש — מרוכז, כדי שכל הטבלאות יציגו אותו דבר ----------
+   מעליות: רק המעלית הגדולה בבניין נכנסת, פעם אחת.
+   ספרינקלרים: משאבה אחת ×3 (התנעת כוכב‑משולש / רוטור תפוס) והשאר ×1.
+   שאר צרכני האש: אריתמטי. */
+function markFire(items){
+  var maxE=0,maxI=-1;
+  items.forEach(function(it,i){
+    it.fKW=0; it.fTxt="—";
+    if(it.elev){
+      if(num(it.unit)>0&&it.unit>maxE){maxE=it.unit;maxI=i;}
+      return;
+    }
+    if(!it.fire||num(it.qty)<=0||num(it.unit)<=0)return;
+    var q=num(it.qty), f=num(it.ff)||1;
+    if(f>1){
+      it.fKW=it.unit*f+it.unit*(q-1);
+      it.fTxt=(q<=1)?("✓ ×"+fmt(f,0))
+                    :("✓ אחת ×"+fmt(f,0)+" · השאר ×1");
+    }else{
+      it.fKW=tot(it); it.fTxt="✓";
+    }
+  });
+  if(maxI>=0){items[maxI].fKW=maxE;items[maxI].fTxt="המעלית הגדולה";}
+  return items;
+}
 function sumAll(items){var s=0;items.forEach(function(i){s+=tot(i);});return s;}
 function sumBacked(items){var s=0;items.forEach(function(i){if(i.group===EM||i.group===ES)s+=tot(i);});return s;}
 function bname(b,i){return b.name||("בניין "+(i+1));}
@@ -643,27 +695,31 @@ function compute(){
   var a=genAlloc(),gpf=num(S.params.genpf)||0.8,gens=[],g,i;
   var common=commonItems();
   for(g=1;g<=a.n;g++){
-    var fed=[],names=[],fire=0,norm=0,elevNote=[];
+    var fed=[],names=[],fire=0,norm=0,ess=0,em=0,elevNote=[];
     for(i=0;i<S.buildings.length;i++){
       if(a.map[i]!==g)continue;
       var b=S.buildings[i],nm=bname(b,i),items=bldItems(b,nm);
       names.push(nm);
-      var maxE=0,maxEn="";
       items.forEach(function(it){
-        if(it.group===NE)return;
+        if(it.group===NE){it.fKW=0;it.fTxt="—";return;}
         fed.push(it);
         norm+=tot(it);
-        if(it.elev){if(it.unit>maxE){maxE=it.unit;maxEn=it.name;}}
-        else if(it.fire)fire+=tot(it)*it.ff;
+        if(it.group===EM)em+=tot(it);else ess+=tot(it);
+        fire+=num(it.fKW);
+        if(it.elev&&num(it.fKW)>0)elevNote.push(nm+": "+it.name+" · "+fmt(it.fKW,1)+" kW");
       });
-      if(maxE>0){fire+=maxE;elevNote.push(nm+": "+maxEn+" · "+fmt(maxE,1)+" kW");}
     }
     if(a.basegen===g){
       names.push("מרתף משותף");
-      common.forEach(function(it){if(it.group===NE)return;fed.push(it);norm+=tot(it);if(it.fire)fire+=tot(it)*it.ff;});
+      common.forEach(function(it){
+        if(it.group===NE){it.fKW=0;it.fTxt="—";return;}
+        fed.push(it);norm+=tot(it);
+        if(it.group===EM)em+=tot(it);else ess+=tot(it);
+        fire+=num(it.fKW);});
     }
     var fk=fire/gpf,nk=norm/gpf,req=Math.max(fk,nk);
     gens.push({g:g,names:names,items:fed,elevNote:elevNote,fireKW:fire,normKW:norm,
+               essKW:ess,emKW:em,essKVA:ess/gpf,emKVA:em/gpf,
                fireKVA:fk,normKVA:nk,req:req,pick:(req>0?up(GENS,req):null),win:(fk>=nk?"fire":"norm")});
   }
   return {alloc:a,gens:gens,common:common};
@@ -672,7 +728,7 @@ function compute(){
 /* ---------- קלט ---------- */
 function unitSel(u){return '<select class="w-unit" data-role="u"><option'+(u==="kW"?" selected":"")+'>kW</option><option'+(u==="HP"?" selected":"")+'>HP</option></select>';}
 function inThead(){return '<thead><tr><th class="name">צרכן</th><th>סטים / לוחות</th><th>הספק לסט/לוח</th><th>יח׳</th><th>סה״כ kW</th><th>קבוצה</th><th>בזמן אש</th></tr></thead>';}
-function fireMark(t){if(!t.fire)return "—";var f=ffv(t.ff);return f>1?("✓ ×"+fmt(f,0)):"✓";}
+function fireMark(t){if(!t.fire)return "—";var f=ffv(t.ff);return f>1?("✓ אחת ×"+fmt(f,0)):"✓";}
 var ABSENT="לא קיים";
 function kwCell(v){return num(v.qty)===0?ABSENT:fmt(num(v.qty)*kw(v.p,v.u),1);}
 
@@ -972,12 +1028,17 @@ function renderCommon(){
 
 /* ---------- פלט ---------- */
 function loadTable(items,opts){
-  var rows='<thead><tr>'+(opts.showSrc?'<th>מקור</th>':'')+'<th class="name">צרכן</th><th>מיקום</th><th>סטים / לוחות</th>'+
+  /* רוחבי עמודות קבועים — אחרת הטבלה הרחבה (9 עמודות) חורגת מרוחב עמוד ה‑A4 ונחתכת */
+  var cw=opts.showSrc
+    ? (opts.fireCol?[8,20,7,8,9,8,10,18,12]:[11,30,9,11,13,12,14])
+    : (opts.fireCol?[22,8,9,10,9,11,19,12]:[32,10,13,14,13,18]);
+  var cg='<colgroup>'+cw.map(function(w){return '<col style="width:'+w+'%">';}).join('')+'</colgroup>';
+  var rows=cg+'<thead><tr>'+(opts.showSrc?'<th>מקור</th>':'')+'<th class="name">צרכן</th><th>מיקום</th><th>סטים / לוחות</th>'+
     '<th>kW לסט/לוח</th><th>סה״כ kW</th><th>קבוצה</th>'+(opts.fireCol?'<th>בחישוב אש</th><th>תרומה בזמן אש</th>':'')+'</tr></thead><tbody>';
   var t=0,f=0;
   items.forEach(function(it){
     if(opts.hideZero&&tot(it)===0)return;
-    var fc=it.elev?0:(it.fire?tot(it)*it.ff:0);
+    var fc=num(it.fKW);
     t+=tot(it);f+=fc;
     var none=(!it.elev&&it.qty===0), blank=(it.elev&&!it.unit);
     rows+='<tr'+((none||blank)?' class="absent"':'')+'>'+(opts.showSrc?'<td class="mini">'+esc(it.src)+'</td>':'')+
@@ -985,10 +1046,10 @@ function loadTable(items,opts){
       (blank?'<td colspan="3">לא הוזן הספק</td>':none?'<td colspan="3">'+ABSENT+'</td>':
         '<td>'+(it.elev?"1":fmt(it.qty,0))+'</td><td>'+fmt(it.unit,1)+'</td><td>'+fmt(tot(it),1)+'</td>')+
       '<td>'+pill(it.group)+'</td>'+
-      (opts.fireCol?'<td class="mini">'+(it.elev?"המעלית הגדולה":(it.fire?(it.ff>1?"✓ ×"+fmt(it.ff,0):"✓"):"—"))+'</td>'+
-        '<td>'+(it.elev?"—":(fc?fmt(fc,1):"—"))+'</td>':'')+'</tr>';
+      (opts.fireCol?'<td class="mini">'+esc(it.fTxt||"—")+'</td>'+
+        '<td>'+(fc?fmt(fc,1):"—")+'</td>':'')+'</tr>';
   });
-  var span=(opts.showSrc?1:0)+5;
+  var span=(opts.showSrc?1:0)+4;   /* מקור?+צרכן+מיקום+סטים+kW לסט — ואז סה״כ kW */
   rows+='<tr class="tot"><td colspan="'+span+'">'+(opts.totalLabel||"סה״כ")+'</td><td>'+fmt(t,1)+'</td>'+
         '<td></td>'+(opts.fireCol?'<td></td><td>'+fmt(f,1)+'</td>':'')+'</tr></tbody>';
   return '<div class="tbl-wrap"><table>'+rows+'</table></div>';
@@ -1040,7 +1101,7 @@ function renderOut(){
       '<div class="who">'+bclass(b)+' · '+b.elev.length+' מעליות</div></div>'+
       '<div class="big">'+(c.hv?'מ״ג':(c.pick?"3×"+c.pick+"A":"—"))+'<small> חיבור ציבורי</small></div></div>'));
     card.appendChild(h(loadTable(items,{fireCol:false,totalLabel:"סה״כ עומסי הבניין"})));
-    card.insertAdjacentHTML("beforeend",connBox(c,"",'סה״כ חיבור להזמנה מחברת חשמל עבור '+esc(nm)));
+    card.insertAdjacentHTML("beforeend",connBox(c,"",'סה״כ חיבור להזמנה מחברת חשמל עבור '+esc(nm)+whyBtn("bld",i)));
     hb.appendChild(card);
   });
   /* מרתף */
@@ -1053,7 +1114,7 @@ function renderOut(){
     '<div class="big">'+(cb.hv?'מ״ג':(cb.pick?"3×"+cb.pick+"A":"—"))+'<small> חיבור ציבורי</small></div></div>'));
   bc.appendChild(h(loadTable(ci,{fireCol:false,totalLabel:"סה״כ עומסי המרתף"})));
   var sc=smokeCheck();
-  bc.insertAdjacentHTML("beforeend",connBox(cb," + "+fmt(num(S.params.park),1)+"A × "+parkingTotal()+" חניות",'סה״כ חיבור להזמנה מחברת חשמל עבור המרתף'));
+  bc.insertAdjacentHTML("beforeend",connBox(cb," + "+fmt(num(S.params.park),1)+"A × "+parkingTotal()+" חניות"+whyBtn("park",0),'סה״כ חיבור להזמנה מחברת חשמל עבור המרתף'+whyBtn("base",0)));
   hbs.appendChild(bc);
   /* גנרטורים */
   var hg=document.getElementById("out-gens");hg.innerHTML="";
@@ -1068,17 +1129,22 @@ function renderOut(){
     var e='';
     if(G.elevNote.length)e='<div class="calcrow"><span class="lbl">מעלית גדולה בחישוב בזמן אש</span><span class="val">'+esc(G.elevNote.join(" · "))+'</span></div>';
     card.insertAdjacentHTML("beforeend",e+
-      '<div class="calcrow"><span class="lbl">חישוב בזמן אש (ספרינקלרים ×'+fmt(sprF(),0)+', מפוחי שחרור ודיחוס, כיבוי אש, מעלית גדולה)</span>'+
+      '<div class="calcrow"><span class="lbl">חישוב בזמן אש (ספרינקלרים — אחת ×'+fmt(sprF(),0)+' והשאר ×1, מפוחי שחרור ודיחוס, כיבוי אש, המעלית הגדולה בכל בניין)</span>'+
       '<span class="val '+(G.win==="fire"?"win":"")+'">'+fmt(G.fireKW,1)+' kW · '+fmt(G.fireKVA,1)+' kVA</span></div>'+
       '<div class="calcrow"><span class="lbl">חישוב רגיל (חיבור אריתמטי, ללא מקדמים)</span>'+
       '<span class="val '+(G.win==="norm"?"win":"")+'">'+fmt(G.normKW,1)+' kW · '+fmt(G.normKVA,1)+' kVA</span></div>'+
+      '<div class="calcrow sub"><span class="lbl">· מתוכו — סה״כ אריתמטי של עומסי חירום</span>'+
+      '<span class="val">'+fmt(G.emKW,1)+' kW · '+fmt(G.emKVA,1)+' kVA</span></div>'+
+      '<div class="calcrow sub"><span class="lbl">· מתוכו — סה״כ אריתמטי של עומסים חיוניים</span>'+
+      '<span class="val">'+fmt(G.essKW,1)+' kW · '+fmt(G.essKVA,1)+' kVA</span></div>'+
       '<div class="calcrow"><span class="lbl">הספק נדרש — הגבוה מבין השניים, cos φ='+fmt(num(S.params.genpf),2)+'</span>'+
       '<span class="val">'+fmt(G.req,1)+' kVA</span></div>'+
-      '<div class="verdict"><span class="lbl">גנרטור מומלץ להזמנה · קטלוג שמרלינג</span>'+
+      '<div class="verdict"><span class="lbl">גנרטור מומלץ להזמנה · קטלוג שמרלינג'+whyBtn("gen",G.g)+'</span>'+
       '<strong>'+(G.pick?G.pick+" kVA":"אין גודל מתאים בקטלוג")+'</strong></div>');
     hg.appendChild(card);
   });
   if(!R.gens.length)hg.innerHTML='<div class="note">להוסיף בניין כדי לחשב.</div>';
+  whyBind(hb);whyBind(hbs);whyBind(hg);
   /* סטריפ */
   var st=document.getElementById("strip"),html="";
   html+='<span class="chip hot">גנרטורים <b>'+R.gens.length+'</b></span>';
@@ -1340,6 +1406,127 @@ function normalize(){
   ensureExtras();
 }
 
+
+
+/* ==================== הסבר: כיצד חושב כל ערך ==================== */
+function whyBtn(kind,arg){
+  return '<button type="button" class="whybtn" data-why="'+kind+'" data-arg="'+esc(String(arg))+'" '+
+         'title="כיצד חושב?" aria-label="כיצד חושב?">?</button>';
+}
+function nz(v,d){return fmt(v,(d===undefined?1:d));}
+function whyOpen(title,html){
+  var ov=h('<div class="modal-ov" role="dialog" aria-modal="true"></div>');
+  var bx=h('<div class="modal calc"></div>');
+  bx.innerHTML='<div class="mt">'+esc(title)+'</div><div class="mb why">'+html+'</div>'+
+    '<div class="ma"><button class="btn primary" data-a="ok" type="button">סגירה</button></div>';
+  function close(){document.removeEventListener("keydown",k);ov.remove();}
+  function k(e){if(e.key==="Escape")close();}
+  bx.querySelector('[data-a=ok]').addEventListener("click",close);
+  ov.addEventListener("click",function(e){if(e.target===ov)close();});
+  document.addEventListener("keydown",k);
+  ov.appendChild(bx);document.body.appendChild(ov);
+  bx.querySelector('[data-a=ok]').focus();
+}
+/* טבלת העומסים שנכנסו לסכום */
+function whyLoadRows(items,showGroup){
+  var r='<table><tr><th>צרכן</th><th>סטים</th><th>kW לסט</th><th>סה״כ kW</th>'+
+        (showGroup?'<th>קבוצה</th>':'')+'</tr>',t=0;
+  items.forEach(function(it){
+    if(!tot(it))return;t+=tot(it);
+    r+='<tr><td>'+esc(it.name)+(it.src&&showGroup?' <span class="mini">('+esc(it.src)+')</span>':'')+'</td>'+
+       '<td class="n">'+(it.elev?"1":nz(it.qty,0))+'</td><td class="n">'+nz(it.unit)+'</td>'+
+       '<td class="n">'+nz(tot(it))+'</td>'+(showGroup?'<td>'+esc(it.group)+'</td>':'')+'</tr>';
+  });
+  r+='<tr class="sum"><td>סה״כ</td><td></td><td></td><td class="n">'+nz(t)+'</td>'+
+     (showGroup?'<td></td>':'')+'</tr></table>';
+  return r;
+}
+/* הסבר חיבור חברת חשמל */
+function whyConn(items,park,name){
+  var c=connFor(sumAll(items),park||0),pf=num(S.params.connpf),am=num(S.params.amp),pa=num(S.params.park);
+  var html='<h4>1. סכום כל העומסים</h4>'+whyLoadRows(items,false)+
+    '<h4>2. הספק מדומה</h4><div class="f">'+nz(c.kw)+' kW ÷ '+fmt(pf,2)+' = <b>'+nz(c.kva)+' kVA</b></div>'+
+    '<h4>3. זרם</h4><div class="f">'+nz(c.kva)+' kVA × '+fmt(am,2)+
+      (park?(' = '+nz(c.kva*am)+' A<br>'+nz(c.kva*am)+' A + '+fmt(pa,1)+' A × '+nz(park,0)+' חניות = <b>'+nz(c.amps,0)+' A</b>')
+           :(' = <b>'+nz(c.amps,0)+' A</b>'))+'</div>'+
+    '<h4>4. עיגול לגודל תקני</h4><div class="f">גדלי חח״י: '+CONN.join(", ")+' A<br>'+
+      (c.hv?'<b>'+nz(c.amps,0)+' A מעל 910A — נדרש חיבור מתח גבוה</b>'
+           :'הגודל התקני הראשון מעל '+nz(c.amps,0)+' A הוא <b>3×'+c.pick+'A</b>')+'</div>'+
+    (park?'<p class="mutenote">תוספת החניות: '+fmt(pa,1)+' אמפר לכל מקום חניה, כולל חניות בפיתוח.</p>':'');
+  whyOpen("כיצד חושב החיבור — "+name,html);
+}
+/* הסבר גנרטור */
+function whyGen(G){
+  var gpf=num(S.params.genpf),sp=sprF();
+  var fr='<table><tr><th>צרכן</th><th>מקור</th><th>סה״כ kW</th><th>הכלל</th><th>תרומה kW</th></tr>',ft=0;
+  G.items.forEach(function(it){
+    if(!num(it.fKW))return;ft+=num(it.fKW);
+    fr+='<tr><td>'+esc(it.name)+'</td><td>'+esc(it.src)+'</td>'+
+        '<td class="n">'+(it.elev?nz(it.unit):nz(tot(it)))+'</td>'+
+        '<td>'+esc(it.fTxt)+'</td><td class="n">'+nz(it.fKW)+'</td></tr>';
+  });
+  fr+='<tr class="sum"><td colspan="4">סה״כ בזמן אש</td><td class="n">'+nz(ft)+' kW</td></tr></table>';
+
+  var nr='<table><tr><th>צרכן</th><th>מקור</th><th>קבוצה</th><th>סה״כ kW</th></tr>',nt=0;
+  G.items.forEach(function(it){
+    if(!tot(it)||it.group===NE)return;nt+=tot(it);
+    nr+='<tr><td>'+esc(it.name)+'</td><td>'+esc(it.src)+'</td><td>'+esc(it.group)+'</td>'+
+        '<td class="n">'+nz(tot(it))+'</td></tr>';
+  });
+  nr+='<tr class="sum"><td colspan="3">סה״כ רגיל</td><td class="n">'+nz(nt)+' kW</td></tr></table>';
+
+  var elevTxt=G.elevNote.length?G.elevNote.join(" · "):"אין מעליות בחישוב";
+  var html=
+    '<p>הגנרטור מחושב פעמיים, והגודל נקבע לפי <b>הגבוה מבין שני החישובים</b>.</p>'+
+    '<h4>א. חישוב בזמן אש</h4>'+
+    '<p>נכנסים רק הצרכנים שפועלים בזמן אש: משאבות ספרינקלרים — <b>משאבה אחת ×'+fmt(sp,0)+
+      '</b> (התנעת כוכב‑משולש, אפשרות עבודה ברוטור תפוס) <b>והשאר ×1</b>; כל מפוחי שחרור העשן והדיחוס; '+
+      'משאבות כיבוי האש; <b>והמעלית הגדולה בכל בניין בלבד, פעם אחת</b>.</p>'+
+    '<p class="mutenote">המעלית שנכנסה: '+esc(elevTxt)+'</p>'+fr+
+    '<div class="f'+(G.win==="fire"?" win":"")+'">'+nz(G.fireKW)+' kW ÷ cos φ '+fmt(gpf,2)+
+      ' = <b>'+nz(G.fireKVA)+' kVA</b>'+(G.win==="fire"?" ← קובע":"")+'</div>'+
+    '<h4>ב. חישוב רגיל</h4>'+
+    '<p>חיבור אריתמטי של כל עומסי החירום והחיוניים, ללא מקדם שימוש וללא מקדם התנעה. '+
+      'עומסים בלתי חיוניים אינם נכנסים.</p>'+nr+
+    '<div class="f">סה״כ אריתמטי של עומסי <b>חירום</b>: <b>'+nz(G.emKW)+' kW</b> · '+nz(G.emKVA)+' kVA<br>'+
+      'סה״כ אריתמטי של עומסים <b>חיוניים</b>: <b>'+nz(G.essKW)+' kW</b> · '+nz(G.essKVA)+' kVA</div>'+
+    '<div class="f'+(G.win==="norm"?" win":"")+'">'+nz(G.emKW)+' + '+nz(G.essKW)+' = '+nz(G.normKW)+
+      ' kW ÷ cos φ '+fmt(gpf,2)+' = <b>'+nz(G.normKVA)+' kVA</b>'+(G.win==="norm"?" ← קובע":"")+'</div>'+
+    '<h4>ג. הגודל להזמנה</h4>'+
+    '<div class="f">הספק נדרש = max('+nz(G.fireKVA)+' , '+nz(G.normKVA)+') = <b>'+nz(G.req)+' kVA</b><br>'+
+      (G.pick?('עיגול כלפי מעלה לקטלוג שמרלינג סינכרו → <b>'+G.pick+' kVA</b>')
+             :'<b>אין גודל מתאים בקטלוג</b>')+'</div>'+
+    '<p class="mutenote">כלל החלוקה: גנרטור אחד מזין עד '+fmt(num(S.params.maxhi),0)+
+      ' בניינים מעל 29 מ׳, ובנוסף את המרתף המשותף וכל כמות בניינים מתחת 29 מ׳.</p>';
+  whyOpen("כיצד חושב גנרטור "+G.g,html);
+}
+/* הסבר חניות */
+function whyPark(){
+  var sg=parkingSuggest(),ac=parkingTotal();
+  var html='<h4>סה״כ חניות</h4><div class="f">'+nz(parkingBasement(),0)+' חניות במרתף + '+
+      nz(parkingDev(),0)+' חניות בפיתוח = <b>'+nz(ac,0)+' חניות</b></div>'+
+    '<h4>בקרת סבירות</h4><div class="f">'+nz(num(S.basement.area),0)+' מ״ר ÷ '+
+      fmt(num(S.params.sqm),0)+' מ״ר לחניה = <b>'+nz(sg,0)+' חניות</b> (הצעה)<br>'+
+      'סטייה מעל 20% מההצעה מציגה התרעה לבדיקה.</div>'+
+    '<h4>השפעה על החיבור</h4><div class="f">כל מקום חניה מוסיף '+fmt(num(S.params.park),1)+
+      ' אמפר לחיבור המרתף: '+fmt(num(S.params.park),1)+' × '+nz(ac,0)+' = <b>'+
+      nz(num(S.params.park)*ac,0)+' A</b></div>';
+  whyOpen("כיצד חושבות החניות",html);
+}
+function whyBind(root){
+  Array.prototype.forEach.call(root.querySelectorAll(".whybtn"),function(b){
+    if(b.dataset.bound)return;b.dataset.bound="1";
+    b.addEventListener("click",function(ev){
+      ev.preventDefault();ev.stopPropagation();
+      var k=b.dataset.why,a=b.dataset.arg,R;
+      if(k==="bld"){var i=parseInt(a,10),bl=S.buildings[i];
+        if(bl)whyConn(bldItems(bl,bname(bl,i)),0,bname(bl,i));}
+      else if(k==="base"){whyConn(commonItems(),parkingTotal(),"מרתף משותף");}
+      else if(k==="gen"){R=compute();R.gens.forEach(function(G){if(String(G.g)===a)whyGen(G);});}
+      else if(k==="park"){whyPark();}
+    });
+  });
+}
 
 /* ==================== קריאת עומסי יועצים מקובצי PDF ==================== */
 var PDF_ADV=[
@@ -2025,8 +2212,8 @@ function exportXls(onFile){
       else if(missing)cells.push("לא הוזן הספק","","");
       else cells.push(it.elev?1:it.qty,it.unit,tot(it));
       cells.push(it.group,
-        missing?"—":(it.elev?"המעלית הגדולה":(it.fire?("כן ×"+it.ff):"—")),
-        (missing||it.elev||!it.fire)?"":tot(it)*it.ff);
+        missing?"—":(it.fTxt||"—"),
+        (missing||!num(it.fKW))?"":num(it.fKW));
       var base=withSrc?1:0;
       r=put(ws,r,cells,{num:[base+4,base+7],startCols:[base,base+1]});
       var gc=ws.getCell(r-1,base+6);
@@ -2138,12 +2325,14 @@ function exportXls(onFile){
     r=headRow(s4,r,["מקור","צרכן","מיקום","סטים / לוחות","kW לסט/לוח",'סה"כ kW',"קבוצת הזנה","בחישוב בזמן אש","תרומה בזמן אש"]);
     r=itemRows(s4,r,G.items,true);
     if(G.elevNote.length)r=noteRow(s4,r,"המעלית הגדולה שנכנסה לחישוב בזמן אש — "+G.elevNote.join(" · "),9);
-    r=put(s4,r,["חישוב בזמן אש","ספרינקלרים ×"+fmt(sprF(),0)+", מפוחי שחרור עשן ודיחוס, משאבות כיבוי אש, המעלית הגדולה בכל בניין",
+    r=put(s4,r,["חישוב בזמן אש","ספרינקלרים — משאבה אחת ×"+fmt(sprF(),0)+" והשאר ×1, מפוחי שחרור עשן ודיחוס, משאבות כיבוי אש, והמעלית הגדולה בכל בניין",
       "","",G.fireKW,"kW",G.fireKVA,"kVA",G.win==="fire"?"◄ קובע":""],
       {bold:G.win==="fire",num:[4,6],startCols:[1,8],fill:G.win==="fire"?BRAND.tot:null});
     r=put(s4,r,["חישוב רגיל","חיבור אריתמטי של כל עומסי החירום והחיוניים, ללא מקדם שימוש וללא מקדם התנעה",
       "","",G.normKW,"kW",G.normKVA,"kVA",G.win==="norm"?"◄ קובע":""],
       {bold:G.win==="norm",num:[4,6],startCols:[1,8],fill:G.win==="norm"?BRAND.tot:null});
+    r=put(s4,r,["· מתוכו — סה״כ אריתמטי של עומסי חירום","","","",G.emKW,"kW",G.emKVA,"kVA",""],{num:[4,6],startCols:[1,8]});
+    r=put(s4,r,["· מתוכו — סה״כ אריתמטי של עומסים חיוניים","","","",G.essKW,"kW",G.essKVA,"kVA",""],{num:[4,6],startCols:[1,8]});
     r=put(s4,r,["הספק נדרש","הגבוה מבין שני החישובים · cos φ = "+num(S.params.genpf),"","","","",G.req,"kVA",""],
       {bold:true,num:[6],startCols:[1]});
     r=put(s4,r,["גנרטור להזמנה","קטלוג שמרלינג סינכרו","","","","",G.pick||"—","kVA",""],
@@ -2215,8 +2404,10 @@ function buildReport(){
       (gl0?' · '+esc(gl0):'')+'</span></div>'+
       loadTable(G.items,{showSrc:true,fireCol:true,totalLabel:"סה״כ עומסים מוזנים"})+
       '<table class="pt2"><tbody>'+
-      '<tr><td class="s">חישוב בזמן אש — ספרינקלרים ×'+fmt(sprF(),0)+', מפוחי שחרור עשן ודיחוס, משאבות כיבוי אש, המעלית הגדולה בכל בניין</td><td class="'+(G.win==="fire"?"b":"")+'">'+fmt(G.fireKW,1)+' kW · '+fmt(G.fireKVA,1)+' kVA</td></tr>'+
+      '<tr><td class="s">חישוב בזמן אש — ספרינקלרים: אחת ×'+fmt(sprF(),0)+' והשאר ×1 · מפוחי שחרור עשן ודיחוס · משאבות כיבוי אש · המעלית הגדולה בכל בניין</td><td class="'+(G.win==="fire"?"b":"")+'">'+fmt(G.fireKW,1)+' kW · '+fmt(G.fireKVA,1)+' kVA</td></tr>'+
       '<tr><td class="s">חישוב רגיל — חיבור אריתמטי של כל עומסי החירום והחיוניים</td><td class="'+(G.win==="norm"?"b":"")+'">'+fmt(G.normKW,1)+' kW · '+fmt(G.normKVA,1)+' kVA</td></tr>'+
+      '<tr><td class="s">· מתוכו — סה״כ אריתמטי של עומסי חירום</td><td>'+fmt(G.emKW,1)+' kW · '+fmt(G.emKVA,1)+' kVA</td></tr>'+
+      '<tr><td class="s">· מתוכו — סה״כ אריתמטי של עומסים חיוניים</td><td>'+fmt(G.essKW,1)+' kW · '+fmt(G.essKVA,1)+' kVA</td></tr>'+
       '<tr><td class="s">הספק נדרש — הגבוה מבין השניים, cos φ = '+fmt(num(S.params.genpf),2)+'</td><td>'+fmt(G.req,1)+' kVA</td></tr>'+
       '</tbody></table>'+
       '<div class="verd"><span>גנרטור מומלץ להזמנה · קטלוג שמרלינג</span><b>'+(G.pick?G.pick+" kVA":"—")+'</b></div>';
@@ -2249,7 +2440,13 @@ function exportPdf(onFile){
   }
   function step(i){
     if(i>=secs.length){done(true);return;}
-    html2canvas(secs[i],{scale:2,backgroundColor:"#ffffff",logging:false,useCORS:true}).then(function(cv){
+    /* אם המקטע רחב מהמארח — להרחיב, אחרת html2canvas חותך את מה שחורג */
+    var need=Math.max(secs[i].scrollWidth,
+                      (function(t){var m=0;Array.prototype.forEach.call(secs[i].querySelectorAll("table"),
+                        function(x){if(x.scrollWidth>m)m=x.scrollWidth;});return m+68;})());
+    host.style.width=Math.max(794,Math.ceil(need))+"px";
+    html2canvas(secs[i],{scale:2,backgroundColor:"#ffffff",logging:false,useCORS:true,
+                         width:secs[i].scrollWidth,windowWidth:host.offsetWidth}).then(function(cv){
       var w=usable, hh=cv.height*w/cv.width;
       if(!first&&y+hh>PH-M){pdf.addPage();y=M;}
       first=false;
